@@ -1,13 +1,9 @@
 module gcd (
-    output reg [7:0] gcd_out,
-    output reg done,
-    output reg error,
-    output reg [2:0] state,
-    input clk,
-    input rst_n,
-    input [7:0] number1,
-    input [7:0] number2,
-    input start
+       output reg [9:0] sqrt_out,
+       output reg done,
+       input clk, rst_n,
+       input [9:0] number,
+       input start
 );
 
     reg [7:0] reg_number1, reg_number2;
