@@ -1,0 +1,175 @@
+# ============================================================
+# 1. System / Editor Garbage
+# ============================================================
+
+# NFS ghost files
+.nfs*
+
+# macOS
+.DS_Store
+._*
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Editor backup / temp
+*~
+*.bak
+*.tmp
+*.swp
+*.swo
+.history/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# ============================================================
+# 2. Simulation (VCS / Verdi / DVE)
+# ============================================================
+
+simv
+simv.daidir/
+simv.vdb/
+csrc/
+DVEfiles/
+
+ucli.key
+stack.info.*
+
+# Waveforms
+*.fsdb
+*.vcd
+*.vpd
+
+# Logs
+*.log
+novas_dump.log
+novas.conf
+novas.rc
+
+# Verdi / nWave
+verdiLog/
+nWaveLog/
+
+# Coverage / debug
+urgReport/
+*.vdb
+
+# ============================================================
+# 3. Synthesis (Design Compiler)
+# ============================================================
+
+# DC database
+*.ddc
+*.db
+*.db.alib
+*.sdb
+alib-*/
+
+# Reports
+*.mr
+*.pvl
+*.syn
+*.svf
+
+# Timing / power reports
+*.area
+*.check
+*.clock
+*.design
+*.port
+*.power
+*.reference
+*.resource
+*.timing
+
+# DC generated
+command.log
+default.svf
+
+# ============================================================
+# 4. Formal / Jasper
+# ============================================================
+
+jgproject/
+*.jdb
+*.jcl
+*.jou
+*.session
+jg.log
+jasper_command.log
+
+# ============================================================
+# 5. APR / P&R / Post Layout
+# ============================================================
+
+*.enc
+*.dat
+*.rpt
+*.spef
+*.sdf
+*.sdf.log
+*.gds
+*.def
+*.cts
+
+# ============================================================
+# 6. Memory Compiler / Huge Binary Packages
+# ============================================================
+
+Memory/ftclib_*/
+*.so
+*.cdb
+*.hb
+*.tbc
+*.tplb
+
+# Linux binary tools
+*.lnx
+*.lnx64
+*.sol
+
+# ============================================================
+# 7. Archive Files
+# ============================================================
+
+*.tar
+*.tar.gz
+*.zip
+
+# ============================================================
+# 8. Large Pattern / Data Files
+# ============================================================
+
+pattern*.txt
+dram*.dat
+*.out
+
+# ============================================================
+# 9. Report Folder
+# ============================================================
+
+Report/
+
+# ============================================================
+# 10. KEEP IMPORTANT FILES
+# ============================================================
+
+# Keep RTL / TCL / SDC / Makefiles
+!*.v
+!*.sv
+!*.vp
+!*.tcl
+!*.sdc
+!*.f
+!makefile
+!Makefile
+
+# Keep README / markdown
+!*.md
+
+# Keep memory models if needed
+!*.lib
+!*.lef

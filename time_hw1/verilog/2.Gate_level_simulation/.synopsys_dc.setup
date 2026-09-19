@@ -1,0 +1,26 @@
+# Source your own path
+# !!!Please note that the current T90 PDK library only offers the core library!!!
+
+set search_path " . /usr/cadtool/ee5216/CBDK_TSMC90GUTM_Arm_f1.0/CIC/SynopsysDC/db \
+								 $search_path"
+								 
+
+set target_library "slow.db \
+										fast.db "
+					
+set link_library   "* $target_library dw_foundation.sldb"
+
+set symbol_library "generic.sdb"
+set synthetic_library "dw_foundation.sldb"
+
+# Recognize synchronous reset (avoid mixing logics with reset)
+set hdlin_ff_always_sync_set_reset true
+
+#Environment Settings
+set command_log_file "./command.log"
+set view_command_log_file "./view_command.log"
+
+set hdlin_translate_off_skip_text "TRUE"
+set edifout_netlist_only  "TRUE"
+set verilogout_no_tri "true" 
+set plot_command  "lpr -Plp" 
