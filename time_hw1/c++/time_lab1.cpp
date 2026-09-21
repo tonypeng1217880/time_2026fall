@@ -25,7 +25,7 @@ uint16_t hardware_pow_2_3(uint16_t x) {
     
     target = target << 12; 
 
-    for (int i = 9; i >= 0; i--) {
+    for (int i = 10; i >= 0; i--) {
         uint16_t temp_y = y | (1 << i);
         uint64_t cube = (uint64_t)temp_y * temp_y * temp_y;
         

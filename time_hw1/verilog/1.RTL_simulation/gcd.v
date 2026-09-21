@@ -1,87 +1,108 @@
 module gcd (
-       output reg [9:0] sqrt_out,
-       output reg done,
-       input clk, rst_n,
-       input [9:0] number,
-       input start
+    output     [9:0] sqr_out,
+    output reg       out_valid,
+    input             clk,
+    input             rst_n,
+    input      [9:0] data_in,
+    input             in_valid
 );
 
-    reg [7:0] reg_number1, reg_number2;
-    reg [7:0] next_reg_number1, next_reg_number2;
-    reg [2:0] next_state;
-    reg [7:0] next_gcd_out;
-    reg next_error;
+    reg [1:0] state;
+    reg [1:0] next_state;
+    reg [9:0] data_reg;
+    reg [9:0] y_reg;
+    reg [9:0] next_y_reg;
+    reg [3:0] bit_index;
+    reg [3:0] next_bit_index;
+    
+    parameter [1:0] IDLE = 0;
+    parameter [1:0] CALC = 1;
+    parameter [1:0] FINISH = 2;
 
-    parameter [2:0] IDLE = 0;
-    parameter [2:0] READ = 1;
-    parameter [2:0] CALC = 2;
-    parameter [2:0] WRITE = 3;
-    parameter [2:0] FINISH = 4;
-
-    always @(posedge clk) begin
-        if (~rst_n) begin
-            reg_number1 <= 0;
-            reg_number2 <= 0;
-            state       <= IDLE;
-            gcd_out     <= 0;
-            error       <= 0;
-        end else begin
-            reg_number1 <= next_reg_number1;
-            reg_number2 <= next_reg_number2;
-            state       <= next_state;
-            gcd_out     <= next_gcd_out;
-            error       <= next_error;
+//input regiter
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            data_reg <= 0;
+        end 
+        else if (in_valid && (state == IDLE)) begin
+            data_reg <= data_in;
+        end
+    end
+//next state
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            state <= IDLE;
+        end
+        else begin
+            state <= next_state;
         end
     end
 
     always @(*) begin
-        done             = 0;
-        next_reg_number1 = reg_number1;
-        next_reg_number2 = reg_number2;
-        next_state       = state;
-        next_gcd_out     = gcd_out;
-        next_error       = error;
+        next_state = state;
+        next_y_reg = y_reg;
+        next_bit_index = bit_index;
         case (state)
             IDLE: begin
-                if (start) begin
-                    next_state = READ;
+                if (in_valid) begin
+                    next_state = CALC;
+                    next_bit_index = 4'd9;
+                    next_y_reg = 10'd0;
                 end
-            end
-
-            READ: begin
-                next_state       = CALC;
-                next_reg_number1 = number1;
-                next_reg_number2 = number2;
             end
 
             CALC: begin
-                if ((reg_number1 == 0) || (reg_number2 == 0)) begin  // data_in have error.
-                    next_state = WRITE;
-                    next_error = 1;
-                end else begin  // data_in don't have error.
-                    if (reg_number1 == reg_number2) begin  // calculate done
-                        next_state = WRITE;
-                    end else if (reg_number1 > reg_number2) begin  // GCD calculating...
-                        next_state       = CALC;
-                        next_reg_number1 = reg_number1 - reg_number2;
-                    end else begin  // GCD calculating...
-                        next_state       = CALC;
-                        next_reg_number2 = reg_number2 - reg_number1;
-                    end
+                if (trial_square <= target) begin
+                    next_y_reg = trial_y;
                 end
-            end
 
-            WRITE: begin
-                next_state   = FINISH;
-                next_gcd_out = (error) ? 0 : reg_number1;
+                if (bit_index == 0) begin
+                    next_state = FINISH;
+                end
+                else begin
+                    next_bit_index = bit_index - 1'b1;
+                end
+                    
             end
 
             FINISH: begin
-                done       = 1'b1;
-                next_error = 0;
+                next_state = IDLE;
+            end
+
+            default: begin
                 next_state = IDLE;
             end
         endcase
     end
+
+wire [19:0] target;
+wire [9:0] trial_y;
+wire [19:0] trial_y_20;
+wire [19:0] trial_square;
+
+assign target = {1'b0, data_reg, 9'b0};
+assign trial_y = y_reg | (10'b1 << bit_index);
+assign trial_y_20 = {10'b0, trial_y};
+assign trial_square = trial_y_20 * trial_y_20;
+
+assign sqr_out = y_reg;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            y_reg <= 0;
+            bit_index <= 0;
+        end  
+        else begin
+            y_reg <= next_y_reg;
+            bit_index <= next_bit_index;
+        end
+    end
+
+
+    always @(*) begin
+        if (state == FINISH)
+            out_valid = 1;
+        else
+            out_valid = 0;
+    end 
 
 endmodule
