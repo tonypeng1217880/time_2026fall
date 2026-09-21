@@ -15,6 +15,11 @@ module gcd (
     reg [3:0] bit_index;
     reg [3:0] next_bit_index;
     
+    wire [19:0] target;
+    wire [9:0] trial_y;
+    wire [19:0] trial_y_20;
+    wire [19:0] trial_square;
+
     parameter [1:0] IDLE = 0;
     parameter [1:0] CALC = 1;
     parameter [1:0] FINISH = 2;
@@ -75,10 +80,7 @@ module gcd (
         endcase
     end
 
-wire [19:0] target;
-wire [9:0] trial_y;
-wire [19:0] trial_y_20;
-wire [19:0] trial_square;
+
 
 assign target = {1'b0, data_reg, 9'b0};
 assign trial_y = y_reg | (10'b1 << bit_index);
