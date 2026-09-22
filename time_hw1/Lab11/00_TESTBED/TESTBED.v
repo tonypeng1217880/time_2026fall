@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-`include "PATTERN.vp"
+`include "PATTERN.v"
 
 `ifdef RTL
     `include "gcd.v"

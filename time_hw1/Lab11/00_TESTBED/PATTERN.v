@@ -1,11 +1,11 @@
 `ifdef RTL
-    `define CYCLE_TIME 2.0
+    `define CYCLE_TIME 5.0
 `elsif GATE
-    `define CYCLE_TIME 2.0
+    `define CYCLE_TIME 5.0
 `elsif POST
-    `define CYCLE_TIME 2.0
+    `define CYCLE_TIME 5.0
 `else
-    `define CYCLE_TIME 2.0
+    `define CYCLE_TIME 5.0
 `endif
 
 `define MAX_LATENCY 100
