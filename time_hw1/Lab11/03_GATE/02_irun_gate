@@ -1,5 +1,5 @@
 #!/bin/bash
 set -e
 
-./00_link
+bash ./00_link
 make irun_gate
