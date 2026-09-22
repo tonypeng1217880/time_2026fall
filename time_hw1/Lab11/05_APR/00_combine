@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+if [ ! -f ../02_SYN/Netlist/gcd_SYN.v ] || [ ! -f ../02_SYN/Netlist/gcd_SYN.sdc ]; then
+    echo "ERROR: run 02_SYN before APR."
+    exit 1
+fi
+
+ln -sfn ../02_SYN/Netlist/gcd_SYN.v gcd_SYN.v
+ln -sfn ../02_SYN/Netlist/gcd_SYN.sdc gcd_SYN.sdc
