@@ -1,10 +1,7 @@
 # TSMC 90 nm Design Compiler setup for TIME HW1.
 
 set search_path " . \
-                  ../01_RTL \
                   /usr/cadtool/ee5216/CBDK_TSMC90GUTM_Arm_f1.0/CIC/SynopsysDC/db \
-                  /usr/cad/synopsys/synthesis/cur/libraries/syn \
-                  /usr/cad/synopsys/synthesis/cur/dw \
                   $search_path"
 
 set target_library    "slow.db fast.db"

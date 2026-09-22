@@ -10,7 +10,7 @@ log_file := vcs.log
 syn_tcl := syn.tcl
 syn_log := syn.log
 
-num_CPU_cores := 8
+num_CPU_cores := 4
 TIMESCALE := -timescale=1ns/1ps
 TIMESCALE_CADENCE := -timescale 1ns/1ps
 VERDI := /usr/cad/synopsys/verdi/2019.06
@@ -77,17 +77,14 @@ XRUN_RTL_SIM = $(XRUN_COMMON) -notimingchecks -define RTL
 XRUN_GATE_SIM = $(XRUN_COMMON) -v $(TSMC90_SIM) -maxdelays -define GATE
 XRUN_POST_SIM = $(XRUN_COMMON) -v $(TSMC90_SIM) -maxdelays -define POST
 
-DC_SHELL = dcnxt_shell -f $(syn_tcl) \
-	-x "set_host_options -max_cores $(num_CPU_cores)" \
-	-output_log_file $(syn_log)
+DC_SHELL = dc_shell -f $(syn_tcl) | tee $(syn_log)
 
-DC_SHELL_GUI = dcnxt_shell -f $(syn_tcl) \
-	-x "set_host_options -max_cores $(num_CPU_cores)" \
+DC_SHELL_GUI = dc_shell -f $(syn_tcl) \
 	-output_log_file $(syn_log) \
 	-gui
 
-READ_RTL_GUI = dcnxt_shell -x 'read_verilog ../01_RTL/$(top_design).v' -gui
-READ_DDC_GUI = dcnxt_shell -x 'read_ddc $(top_design)_SYN.ddc' -gui
+READ_RTL_GUI = dc_shell -x 'read_verilog ../01_RTL/$(top_design).v' -gui
+READ_DDC_GUI = dc_shell -x 'read_ddc $(top_design)_SYN.ddc' -gui
 
 INNOVUS_INIT = innovus -cpus $(num_CPU_cores) \
 	-init ./cmd/run_apr.cmd \

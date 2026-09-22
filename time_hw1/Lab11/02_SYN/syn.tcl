@@ -11,7 +11,6 @@ file mkdir Report
 file mkdir Netlist
 
 # Read and elaborate RTL.
-set hdlin_auto_save_templates true
 analyze -format verilog ../01_RTL/$DESIGN.v
 elaborate $DESIGN
 current_design $DESIGN
@@ -52,7 +51,7 @@ set_fix_multiple_port_nets -all -buffer_constants [get_designs *]
 
 check_design > Report/$DESIGN.check
 check_timing > Report/$DESIGN.check_timing
-compile_ultra
+compile -map_effort medium
 
 # Reports.
 report_design                         > Report/$DESIGN.design
