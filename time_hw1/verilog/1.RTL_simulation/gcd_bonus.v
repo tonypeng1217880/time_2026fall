@@ -9,55 +9,46 @@ module gcd_bonus (
     input            in_valid
 );
 
-    parameter [2:0] IDLE   = 3'd0;
-    parameter [2:0] READ   = 3'd1;
-    parameter [2:0] CALC   = 3'd2;
-    parameter [2:0] WRITE  = 3'd3;
-    parameter [2:0] FINISH = 3'd4;
+    parameter [1:0] IDLE   = 3'd0;
+    parameter [1:0] CALC   = 3'd1;
+    parameter [1:0] FINISH = 3'd2;
 
-
-
-   
-    reg [2:0] next_state;
     reg [2:0] state;
-    // Sequential registers
+    reg [9:0] data_reg;
+
+    //input register
     always @(posedge clk or negedge rst_n) begin
         if (~rst_n) begin
-            
-        end else begin
-           
+            data_reg <= 0;
+        end 
+        else if (in_valid && (state == IDLE)) begin
+            data_reg <= data_in;
         end
     end
 
-    
-    always @(*) begin
-        
+    always @(posedge clk or negedge rst_n) begin
+        if (~rst_n) begin
+            state <= IDLE;
+        end
+        else begin
+            case (state)
+                IDLE: begin
+                    state <= CALC;
+                end
 
-        case (state)
-            IDLE: begin
-                
-            end
+                CALC: begin
+                    
+                end
 
-            READ: begin
-                
-            end
+                FINISH: begin
+                    
+                end
 
-            CALC: begin
-                
-            end
-
-            WRITE: begin
-                
-            end
-
-            FINISH: begin
-                
-            end
-
-            default: begin
-                
-            end
-        endcase
+                default: begin
+                    
+                end
+            endcase
+        end
     end
 
 endmodule

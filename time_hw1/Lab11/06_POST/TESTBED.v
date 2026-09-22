@@ -1,1 +1,1 @@
-../00_TESTBED/TESTBED.v
+`include "../00_TESTBED/TESTBED.v"

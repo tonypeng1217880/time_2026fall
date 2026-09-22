@@ -24,6 +24,8 @@ VCS_COMMON = vcs $(TIMESCALE) \
 	-Mupdate \
 	-R \
 	-debug_access+all \
+	+incdir+. \
+	+incdir+../00_TESTBED \
 	-f $(source_file) \
 	-o $(output_file) \
 	-l $(log_file) \
@@ -49,6 +51,8 @@ VCS_POST_SIM = $(VCS_COMMON) \
 	+nowarnNTCDSN
 
 IRUN_COMMON = irun -f $(source_file) \
+	-incdir . \
+	-incdir ../00_TESTBED \
 	-override_precision \
 	$(TIMESCALE_CADENCE) \
 	-sdf_precision 1ps \
@@ -61,6 +65,8 @@ IRUN_POST_SIM = $(IRUN_COMMON) -v $(TSMC90_SIM) -maxdelays -define POST
 
 XRUN_COMMON = xrun -f $(source_file) \
 	-mcl $(num_CPU_cores) \
+	-incdir . \
+	-incdir ../00_TESTBED \
 	-override_precision \
 	$(TIMESCALE_CADENCE) \
 	-sdf_precision 1ps \
@@ -140,13 +146,13 @@ nWave:
 	nWave -ssf *.fsdb
 
 verdi_rtl:
-	verdi -ssf *.fsdb -sv -f $(source_file) +define+RTL +v2k -autoalias
+	verdi -ssf *.fsdb -sv +incdir+. +incdir+../00_TESTBED -f $(source_file) +define+RTL +v2k -autoalias
 
 verdi_gate:
-	verdi -ssf *.fsdb -sv -v $(TSMC90_SIM) -f $(source_file) +define+GATE +v2k -autoalias
+	verdi -ssf *.fsdb -sv +incdir+. +incdir+../00_TESTBED -v $(TSMC90_SIM) -f $(source_file) +define+GATE +v2k -autoalias
 
 verdi_post:
-	verdi -ssf *.fsdb -sv -v $(TSMC90_SIM) -f $(source_file) +define+POST +v2k -autoalias
+	verdi -ssf *.fsdb -sv +incdir+. +incdir+../00_TESTBED -v $(TSMC90_SIM) -f $(source_file) +define+POST +v2k -autoalias
 
 clean:
 	rm -rf *.fsdb csrc simv simv.daidir ucli.key novas.* *.log *.sdf.X

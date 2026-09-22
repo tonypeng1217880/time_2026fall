@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ./09_clean_up > check.log
 ./01_run_vcs_gate > check.log
 if  grep -i -q 'FAIL' 'vcs.log'; then

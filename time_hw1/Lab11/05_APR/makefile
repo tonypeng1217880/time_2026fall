@@ -1,1 +1,1 @@
-../00_TESTBED/makefile
+include ../00_TESTBED/makefile

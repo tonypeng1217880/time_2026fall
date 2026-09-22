@@ -1,1 +1,3 @@
+#!/bin/bash
+
 make verdi_gate

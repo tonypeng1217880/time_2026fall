@@ -18,6 +18,8 @@ material only. No active script in this flow references them.
 
 ## Run order
 
+0. After copying to Linux, run `bash 00_TESTBED/setup_permissions` once if the
+   transfer did not preserve executable bits.
 1. In `01_RTL`, run `./01_run_vcs_rtl`.
 2. In `02_SYN`, run `./01_run_dc_shell`, then `./08_check`.
 3. In `03_GATE`, run `./01_run_vcs_gate`; it refreshes the synthesis links.
