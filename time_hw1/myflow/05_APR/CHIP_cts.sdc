@@ -21,9 +21,9 @@ set_load -pin_load 20 [all_outputs]
 # You should modify your desired cycle time for post-layout simulation (06_POST)
 # input / output delay should be half of cycle time, or you might get failure in this lab
 #=============================================================================================
-create_clock [get_ports clk]  -period 20.0  -waveform {0 10.0}
-set_input_delay     10.0 -clock clk [remove_from_collection [all_inputs] [get_ports clk]]
-set_output_delay    10.0 -clock clk [all_outputs]
+create_clock [get_ports clk]  -period 5  -waveform {0 2.5}
+set_input_delay     2.5 -clock clk [remove_from_collection [all_inputs] [get_ports clk]]
+set_output_delay    2.5 -clock clk [all_outputs]
 
 
 
