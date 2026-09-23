@@ -27,16 +27,15 @@ create_clock -name clk -period $CYCLE [get_ports clk]
 set_dont_touch_network [get_clocks clk]
 set_fix_hold [get_clocks clk]
 set_clock_uncertainty 0.1 [get_clocks clk]
-set_input_transition 0.1 [all_inputs]
-set_clock_transition 0.1 [get_clocks clk]
 
 # I/O timing constraints. Clock and asynchronous reset are not data inputs.
 set DATA_INPUTS [remove_from_collection [all_inputs] [get_ports {clk rst_n}]]
+set_input_transition 0.1 $DATA_INPUTS
 set_input_delay  -max $INPUT_DLY  -clock clk $DATA_INPUTS
 set_input_delay  -min 0           -clock clk $DATA_INPUTS
-set_input_delay  0                -clock clk [get_ports {clk rst_n}]
 set_output_delay -max $OUTPUT_DLY -clock clk [all_outputs]
 set_output_delay -min 0           -clock clk [all_outputs]
+set_false_path -from [get_ports rst_n]
 
 # The TSMC90 kit supplied for TIME contains only the core library.
 set_drive 1 $DATA_INPUTS

@@ -1,29 +1,21 @@
-###################################################################
-
-# Created by write_sdc on Tue Jul 25 03:44:35 2023
-
-###################################################################
+# TSMC90 APR timing constraints for the TIME bonus design.
+# Process corners are defined in mmmc.view; keep this file SDC-only.
 set sdc_version 2.1
 
-#=============================================================================================
-# The basic condition for clock tree synthesis and its timing analysis
-# You cannot modify the setting below, or you must get failure in this lab
-#=============================================================================================
-set_units -time ns -resistance kOhm -capacitance pF -voltage V -current mA
-set_operating_conditions -max WCCOM -max_library                               \
-fsa0m_a_generic_core_ss1p62v125c\
-                         -min BCCOM -min_library                               \
-fsa0m_a_generic_core_ff1p98vm40c
-set_drive 0.1 [all_inputs]
-set_load -pin_load 20 [all_outputs]
+set CYCLE 5.0
+set HALF_CYCLE 2.5
 
-#=============================================================================================
-# You should modify your desired cycle time for post-layout simulation (06_POST)
-# input / output delay should be half of cycle time, or you might get failure in this lab
-#=============================================================================================
-create_clock [get_ports clk]  -period 5  -waveform {0 2.5}
-set_input_delay     2.5 -clock clk [remove_from_collection [all_inputs] [get_ports clk]]
-set_output_delay    2.5 -clock clk [all_outputs]
+create_clock -name clk -period $CYCLE \
+             -waveform {0.0 2.5} [get_ports clk]
+set_clock_uncertainty 0.1 [get_clocks clk]
 
+# Only synchronous data ports receive I/O delays.  clk is the clock root and
+# rst_n is asynchronous, so neither belongs in the data-input collection.
+set DATA_INPUTS [remove_from_collection [all_inputs] [get_ports {clk rst_n}]]
+set_input_transition 0.1 $DATA_INPUTS
+set_input_delay  -max $HALF_CYCLE -clock clk $DATA_INPUTS
+set_input_delay  -min 0.0         -clock clk $DATA_INPUTS
+set_output_delay -max $HALF_CYCLE -clock clk [all_outputs]
+set_output_delay -min 0.0         -clock clk [all_outputs]
 
-
+set_false_path -from [get_ports rst_n]

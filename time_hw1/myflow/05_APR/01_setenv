@@ -1,2 +1,4 @@
 #!/bin/csh
-setenv OA_HOME /RAID2/cad/cadence/INNOVUS/INNOVUS_20.15.000/share/oa
+# This LEF/Verilog flow does not use OpenAccess.  Clear the stale Lab11
+# Innovus 20.15 OA path and let the workstation use its default Innovus setup.
+unsetenv OA_HOME

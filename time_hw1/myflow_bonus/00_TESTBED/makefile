@@ -13,7 +13,8 @@ syn_log := syn.log
 num_CPU_cores := 4
 TIMESCALE := -timescale=1ns/1ps
 TIMESCALE_CADENCE := -timescale 1ns/1ps
-VERDI := /usr/cad/synopsys/verdi/2019.06
+VERDI := $(VERDI_HOME)
+VERDI_PLI_DIR := $(if $(wildcard $(VERDI)/share/PLI/VCS/LINUX64),$(VERDI)/share/PLI/VCS/LINUX64,$(VERDI)/share/PLI/VCS/linux64)
 TSMC90_SIM := /usr/cadtool/ee5216/CBDK_TSMC90GUTM_Arm_f1.0/CIC/Verilog/tsmc090.v
 
 VCS_COMMON = vcs $(TIMESCALE) \
@@ -29,8 +30,8 @@ VCS_COMMON = vcs $(TIMESCALE) \
 	-f $(source_file) \
 	-o $(output_file) \
 	-l $(log_file) \
-	-P $(VERDI)/share/PLI/VCS/linux64/novas.tab \
-	   $(VERDI)/share/PLI/VCS/linux64/pli.a
+	-P $(VERDI_PLI_DIR)/novas.tab \
+	   $(VERDI_PLI_DIR)/pli.a
 
 VCS_RTL_SIM = $(VCS_COMMON) \
 	+define+RTL \
