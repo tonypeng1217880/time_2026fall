@@ -1,0 +1,57 @@
+#!/bin/bash
+
+Design="gcd"
+
+NO_COLOR='\033[0m'
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+
+TimingReport="Report/${Design}.timing"
+AreaReport="Report/${Design}.area"
+PowerReport="Report/${Design}.power"
+
+Area=$(grep 'Total cell area:' "$AreaReport" | grep -Eo '[+-]?[0-9]+([.][0-9]+)?')
+Dynamic=$(grep 'Total Dynamic Power' "$PowerReport")
+Leakage=$(grep 'Cell Leakage Power' "$PowerReport")
+flag=0
+
+echo -e "${YELLOW}============================${NO_COLOR}"
+
+if grep -i -q 'latch' syn.log; then
+    echo -e "${RED}--> X There is a latch in this design.${NO_COLOR}"
+    flag=1
+else
+    echo -e "${GREEN}--> V Latch check passed.${NO_COLOR}"
+fi
+
+if grep -i -q 'mismatch' syn.log; then
+    echo -e "${RED}--> X Width mismatch detected.${NO_COLOR}"
+    flag=1
+else
+    echo -e "${GREEN}--> V Width mismatch check passed.${NO_COLOR}"
+fi
+
+if grep -i -q '^Error:' syn.log; then
+    echo -e "${RED}--> X Error found in syn.log.${NO_COLOR}"
+    flag=1
+else
+    echo -e "${GREEN}--> V No Design Compiler error found.${NO_COLOR}"
+fi
+
+if grep -i -q 'VIOLATED' "$TimingReport"; then
+    echo -e "${RED}--> X Setup timing is violated.${NO_COLOR}"
+    flag=1
+else
+    echo -e "${GREEN}--> V Setup timing check passed.${NO_COLOR}"
+fi
+
+echo -e "${YELLOW}============================${NO_COLOR}"
+if [ "$flag" -eq 1 ]; then
+    echo -e "${RED}--> X 02_SYN failed. Check syn.log and Report/.${NO_COLOR}"
+else
+    echo -e "${GREEN}--> V 02_SYN completed successfully.${NO_COLOR}"
+fi
+echo -e "${YELLOW}Area: ${Area}${NO_COLOR}"
+echo -e "${YELLOW}Dynamic: ${Dynamic}${NO_COLOR}"
+echo -e "${YELLOW}Leakage: ${Leakage}${NO_COLOR}"

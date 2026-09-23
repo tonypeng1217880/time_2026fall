@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+LAB_ROOT=$(cd -- "$SCRIPT_DIR/.." && pwd)
+
+find "$LAB_ROOT" -maxdepth 2 -type f \
+    \( -name '0[0-9]_*' -o -name '00_link' -o -name '00_combine' \) \
+    -exec chmod +x {} +
+
+echo "Lab11 runner scripts are now executable."

@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+if [ ! -f ../05_APR/StreamOut/gcd_APR.v ] || [ ! -f ../05_APR/StreamOut/gcd_APR.sdf ]; then
+    echo "ERROR: finish 05_APR before post-layout simulation."
+    exit 1
+fi
+
+ln -sfn ../05_APR/StreamOut/gcd_APR.v gcd_APR.v
+ln -sfn ../05_APR/StreamOut/gcd_APR.sdf gcd_APR.sdf
