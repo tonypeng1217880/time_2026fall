@@ -1,0 +1,1 @@
+../02_SYN/Netlist/gcd_SYN.sdc
