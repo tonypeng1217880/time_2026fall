@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+
+bash ./00_link
+make vcs_post
