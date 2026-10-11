@@ -1,0 +1,104 @@
+0 
+37
++define+RTL+PD_TEST+NO_FSDB
++incdir+.
++incdir+../00_TESTBED
++notimingcheck
+-Mamsrun=
+-Masflags=
+-Mcc=gcc
+-Mcfl= -pipe -fPIC -O -I/usr/cad/synopsys/vcs/2022.06/include
+-Mcplusplus=g++
+-Mcrt0=
+-Mcrtn=
+-Mcsrc=
+-Mdir=csrc_pd_diag
+-Mexternalobj=
+-Mldflags= -rdynamic
+-Mobjects= /usr/cad/synopsys/vcs/2022.06/linux64/lib/libvirsim.so /usr/cad/synopsys/vcs/2022.06/linux64/lib/liberrorinf.so /usr/cad/synopsys/vcs/2022.06/linux64/lib/libsnpsmalloc.so /usr/cad/synopsys/vcs/2022.06/linux64/lib/libvfs.so
+-Mout=simv_pd_diag
+-Msaverestoreobj=/usr/cad/synopsys/vcs/2022.06/linux64/lib/vcs_save_restore_new.o
+-Msyslibs=-ldl
+-Mvcsaceobjs=
+-Mxcflags= -pipe -fPIC -I/usr/cad/synopsys/vcs/2022.06/include
+-Mxllcflags=
+-Xvcs_run_simv=1
+-f filelist.f
+-full64
+-gen_obj
+-l
+-o simv_pd_diag
+-picarchive
+-sverilog
+-timescale=1ns/1ps
+-v
+/usr/cad/synopsys/vcs/2022.06/linux64/bin/vcs1
+pd_diag.log
+simv_pd_diag
+/usr/cadtool/ee5216/CBDK_TSMC90GUTM_Arm_f1.0/CIC/Verilog/tsmc090.v
+filelist.f
+46
+XDG_SESSION_ID=7145
+XDG_RUNTIME_DIR=/run/user/35207
+VMR_MODE_FLAG=64
+VERDI_HOME=/usr/cad/synopsys/verdi/2022.06
+VENDOR=unknown
+VCS_PATHMAP_PRELOAD_DONE=1
+VCS_MX_HOME_INTERNAL=1
+VCS_MODE_FLAG=64
+VCS_LOG_FILE=pd_diag.log
+VCS_HOME=/usr/cad/synopsys/vcs/2022.06
+VCS_EXEC_DONE=1
+VCS_DEPTH=0
+VCS_CC=gcc
+VCS_ARG_ADDED_FOR_TMP=1
+VCS_ARCH_OVERRIDE=linux
+VCS_ARCH=linux64
+UNAME=/bin/uname
+TOOL_HOME=/usr/cad/synopsys/vcs/2022.06/linux64
+SYN_MAN_DIR=/usr/cad/synopsys/synthesis/2025.06/doc/syn/man
+SYNOPSYS_LC_ROOT=/usr/cad/synopsys/lc/cur
+SSH_TTY=/dev/pts/4
+SSH_CONNECTION=140.114.24.33 56920 140.114.24.112 22
+SSH_CLIENT=140.114.24.33 56920 22
+SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass
+SNPS_VCS_CLANG_PATH=/usr/cad/synopsys/vcs/2022.06/linux64/clang
+SNPS_INTERNAL_VCS_LINUX_OS=linux
+SHLIB_PATH=/usr/cad/synopsys/verdi/2022.06/etc/lib/libstdc++/LINUX64/:/usr/cad/synopsys/verdi/2022.06/share/PLI/lib/LINUX64/:/usr/cad/synopsys/verdi/2022.06/share/PLI/VCS/LINUX64/:
+SCRNAME=vcs
+SCRIPT_NAME=vcs
+REMOTEHOST=140.114.24.33
+OVA_UUM=0
+OSTYPE=linux
+OA_HOME=/usr/cad/cadence/INNOVUS/INNOVUS_20.10.000/oa_v22.60.028
+MODULES_USE_COMPAT_VERSION=0
+MODULES_CMD=/usr/share/Modules/libexec/modulecmd.tcl
+MODULESHOME=/usr/share/Modules
+MODULEPATH_modshare=/usr/share/Modules/modulefiles:2:/etc/modulefiles:2:/usr/share/modulefiles:2
+MODULEPATH=/etc/scl/modulefiles:/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles
+LOADEDMODULES=
+LESSOPEN=||/usr/bin/lesspipe.sh %s
+LC_ALL=C
+HOSTTYPE=x86_64-linux
+GROUP=m114
+GDK_BACKEND=x11
+DEBUGINFOD_URLS=https://debuginfod.centos.org/
+DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-H3BrdcQGzN,guid=bd2052a1b21d847547674cc06aca5901
+0
+0
+8
+1126312956 /usr/cadtool/ee5216/CBDK_TSMC90GUTM_Arm_f1.0/CIC/Verilog/tsmc090.v
+1791646213 gcd.v
+1791646955 ../00_TESTBED/PATTERN.v
+1791646213 PATTERN.v
+1791646213 ../00_TESTBED/TESTBED.v
+1791646213 TESTBED.v
+1126312956 /usr/cadtool/ee5216/CBDK_TSMC90GUTM_Arm_f1.0/CIC/Verilog/tsmc090.v
+1791646213 filelist.f
+4
+1654054205 /usr/cad/synopsys/vcs/2022.06/linux64/lib/libvirsim.so
+1654053585 /usr/cad/synopsys/vcs/2022.06/linux64/lib/liberrorinf.so
+1654053489 /usr/cad/synopsys/vcs/2022.06/linux64/lib/libsnpsmalloc.so
+1654053565 /usr/cad/synopsys/vcs/2022.06/linux64/lib/libvfs.so
+1791646999 simv_pd_diag.daidir
+-1 partitionlib

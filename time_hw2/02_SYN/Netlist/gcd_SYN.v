@@ -1,0 +1,560 @@
+/////////////////////////////////////////////////////////////
+// Created by: Synopsys DC Expert(TM) in wire load mode
+// Version   : X-2025.06
+// Date      : Sun Oct 11 03:38:47 2026
+/////////////////////////////////////////////////////////////
+
+
+module gcd ( clk_in, rst_n, clk_o1, clk_o2, locked );
+  input clk_in, rst_n;
+  output clk_o1, clk_o2, locked;
+  wire   ref_half, locked1, locked2, lead_lag1, lead_lag2;
+  wire   [5:0] code1;
+  wire   [5:0] code2;
+
+  pd_1 u_pd1 ( .ref_clk(ref_half), .rst_n(rst_n), .fb_clk(clk_o1), .lead_lag(
+        lead_lag1) );
+  pd_0 u_pd2 ( .ref_clk(clk_in), .rst_n(rst_n), .fb_clk(clk_o2), .lead_lag(
+        lead_lag2) );
+  tdl_1 u_tdl1 ( .tdl_code(code1), .tdl_in(clk_in), .tdl_out(clk_o1) );
+  tdl_0 u_tdl2 ( .tdl_code(code2), .tdl_in(clk_in), .tdl_out(clk_o2) );
+  controller u_ctl1 ( .clk_in(clk_in), .rst_n(rst_n), .enable(1'b1), 
+        .lead_lag(lead_lag1), .tdl_code(code1), .locked(locked1), 
+        .measure_active() );
+  controller_ACQUIRE_FORWARD1 u_ctl2 ( .clk_in(clk_in), .rst_n(rst_n), 
+        .enable(locked1), .lead_lag(lead_lag2), .tdl_code(code2), .locked(
+        locked2), .measure_active() );
+  AND2X2 U4 ( .A(locked2), .B(locked1), .Y(locked) );
+  INVX2 U5 ( .A(clk_in), .Y(ref_half) );
+endmodule
+
+
+module controller_ACQUIRE_FORWARD1 ( clk_in, rst_n, enable, lead_lag, tdl_code, 
+        locked, measure_active );
+  output [5:0] tdl_code;
+  input clk_in, rst_n, enable, lead_lag;
+  output locked, measure_active;
+  wire   pd_meta, forward_armed, N22, N47, N48, N49, N50, N51, N52, n7, n9,
+         n13, n14, n16, n17, n18, n19, n20, n21, n220, n23, n24, n25, n26, n27,
+         n28, n30, n31, n32, n33, n34, n35, n36, n37, n38, n39, n1, n2, n3, n4,
+         n5, n6, n8;
+  wire   [2:0] wait_count;
+  wire   [5:3] r385_carry;
+
+  DFFNSRHX1 pd_meta_reg ( .D(lead_lag), .CKN(clk_in), .SN(1'b1), .RN(rst_n), 
+        .Q(pd_meta), .QN() );
+  DFFRQX2 tdl_code_reg_5_ ( .D(n38), .CK(clk_in), .RN(rst_n), .Q(tdl_code[5])
+         );
+  DFFRQX2 forward_armed_reg ( .D(n26), .CK(clk_in), .RN(rst_n), .Q(
+        forward_armed) );
+  DFFRQX2 tdl_code_reg_4_ ( .D(n30), .CK(clk_in), .RN(rst_n), .Q(tdl_code[4])
+         );
+  DFFRQX2 wait_count_reg_2_ ( .D(n220), .CK(clk_in), .RN(rst_n), .Q(
+        wait_count[2]) );
+  DFFRQX2 wait_count_reg_1_ ( .D(n23), .CK(clk_in), .RN(rst_n), .Q(
+        wait_count[1]) );
+  DFFRQX2 wait_count_reg_0_ ( .D(n24), .CK(clk_in), .RN(rst_n), .Q(
+        wait_count[0]) );
+  DFFRQX2 tdl_code_reg_3_ ( .D(n31), .CK(clk_in), .RN(rst_n), .Q(tdl_code[3])
+         );
+  DFFRQX2 tdl_code_reg_2_ ( .D(n32), .CK(clk_in), .RN(rst_n), .Q(tdl_code[2])
+         );
+  DFFRQX2 tdl_code_reg_1_ ( .D(n33), .CK(clk_in), .RN(rst_n), .Q(tdl_code[1])
+         );
+  AND2X2 U33 ( .A(n36), .B(enable), .Y(n24) );
+  AND2X2 U32 ( .A(n35), .B(enable), .Y(n23) );
+  AND2X2 U31 ( .A(n34), .B(enable), .Y(n220) );
+  AND2X2 U34 ( .A(n27), .B(enable), .Y(n26) );
+  AND2X2 U35 ( .A(n37), .B(enable), .Y(n28) );
+  DFFRQX2 tdl_code_reg_0_ ( .D(n39), .CK(clk_in), .RN(rst_n), .Q(tdl_code[0])
+         );
+  DFFRQXL forward_high_seen_reg ( .D(n28), .CK(clk_in), .RN(rst_n), .Q(n20) );
+  DFFRQXL pd_sync_reg ( .D(pd_meta), .CK(clk_in), .RN(rst_n), .Q(n21) );
+  DFFRX1 locked_reg ( .D(n25), .CK(clk_in), .RN(rst_n), .Q(locked), .QN(n8) );
+  CLKAND2X2 U3 ( .A(tdl_code[1]), .B(tdl_code[0]), .Y(n1) );
+  ADDHXL U4 ( .A(tdl_code[4]), .B(r385_carry[4]), .CO(r385_carry[5]), .S(N51)
+         );
+  XOR2X1 U5 ( .A(tdl_code[1]), .B(tdl_code[0]), .Y(N48) );
+  AO22XL U6 ( .A0(tdl_code[0]), .A1(n14), .B0(N47), .B1(n4), .Y(n39) );
+  INVX2 U7 ( .A(n14), .Y(n4) );
+  NOR3BX1 U8 ( .AN(enable), .B(locked), .C(n19), .Y(measure_active) );
+  NAND3BX2 U9 ( .AN(n18), .B(N22), .C(n16), .Y(n14) );
+  OAI211XL U10 ( .A0(n6), .A1(n21), .B0(wait_count[2]), .C0(enable), .Y(n18)
+         );
+  AO22X2 U11 ( .A0(tdl_code[1]), .A1(n14), .B0(N48), .B1(n4), .Y(n33) );
+  AO22X2 U12 ( .A0(tdl_code[2]), .A1(n14), .B0(N49), .B1(n4), .Y(n32) );
+  AO22X2 U13 ( .A0(tdl_code[3]), .A1(n14), .B0(N50), .B1(n4), .Y(n31) );
+  AO22X2 U14 ( .A0(tdl_code[4]), .A1(n14), .B0(N51), .B1(n4), .Y(n30) );
+  AO22X2 U15 ( .A0(tdl_code[5]), .A1(n14), .B0(N52), .B1(n4), .Y(n38) );
+  ADDHX1 U16 ( .A(tdl_code[3]), .B(r385_carry[3]), .CO(r385_carry[4]), .S(N50)
+         );
+  ADDHX1 U17 ( .A(tdl_code[2]), .B(n1), .CO(r385_carry[3]), .S(N49) );
+  NOR2BX1 U18 ( .AN(wait_count[1]), .B(n17), .Y(n16) );
+  NAND4X2 U19 ( .A(n16), .B(wait_count[2]), .C(enable), .D(n6), .Y(n13) );
+  NAND2X2 U20 ( .A(wait_count[0]), .B(n8), .Y(n17) );
+  OAI2BB2X2 U21 ( .B0(n13), .B1(n3), .A0N(n13), .A1N(n20), .Y(n37) );
+  OAI31X1 U22 ( .A0(n5), .A1(n13), .A2(n3), .B0(n6), .Y(n27) );
+  INVX2 U23 ( .A(n20), .Y(n5) );
+  INVX2 U24 ( .A(forward_armed), .Y(n6) );
+  INVX2 U25 ( .A(n21), .Y(n3) );
+  XOR2X1 U26 ( .A(wait_count[2]), .B(n16), .Y(n34) );
+  OAI31X1 U27 ( .A0(n7), .A1(n6), .A2(n9), .B0(n8), .Y(n25) );
+  NAND3XL U28 ( .A(wait_count[1]), .B(wait_count[0]), .C(wait_count[2]), .Y(n7) );
+  NAND2X2 U29 ( .A(enable), .B(n3), .Y(n9) );
+  XNOR2X1 U30 ( .A(wait_count[1]), .B(n17), .Y(n35) );
+  XOR2X1 U37 ( .A(n8), .B(wait_count[0]), .Y(n36) );
+  NOR3X1 U38 ( .A(wait_count[0]), .B(wait_count[2]), .C(wait_count[1]), .Y(n19) );
+  CLKINVX1 U39 ( .A(tdl_code[0]), .Y(N47) );
+  XOR2X1 U40 ( .A(r385_carry[5]), .B(tdl_code[5]), .Y(N52) );
+  AND4X1 U41 ( .A(tdl_code[3]), .B(tdl_code[2]), .C(tdl_code[1]), .D(
+        tdl_code[0]), .Y(n2) );
+  OAI21X1 U42 ( .A0(tdl_code[4]), .A1(n2), .B0(tdl_code[5]), .Y(N22) );
+endmodule
+
+
+module controller ( clk_in, rst_n, enable, lead_lag, tdl_code, locked, 
+        measure_active );
+  output [5:0] tdl_code;
+  input clk_in, rst_n, enable, lead_lag;
+  output locked, measure_active;
+  wire   pd_meta, pd_sync, prev_lead_lag, prev_valid, N30, N31, N32, N33, N34,
+         N37, N38, N39, N40, N41, n320, n330, n340, n35, n36, n380, n390, n400,
+         n410, n42, n43, n44, n45, n46, n47, n48, n1, n2, n3, n4, n5, n6, n7,
+         n8, n9, n10, n11, n12, n13, n14, n15, n16, n17, n18, n19, n20, n21,
+         n22, n23, n24, n25, n26, n27, n28, n29, n300, n310, n49, n50, n51,
+         n52, n53, n54, n55, n56, n57, n58, n59, n60, n61;
+  wire   [2:0] wait_count;
+  wire   [5:2] add_377_carry;
+
+  DFFNSRHX1 pd_meta_reg ( .D(lead_lag), .CKN(clk_in), .SN(1'b1), .RN(rst_n), 
+        .Q(pd_meta), .QN() );
+  DFFRHQX4 tdl_code_reg_0_ ( .D(n48), .CK(clk_in), .RN(rst_n), .Q(tdl_code[0])
+         );
+  DFFRQX2 wait_count_reg_0_ ( .D(n35), .CK(clk_in), .RN(rst_n), .Q(
+        wait_count[0]) );
+  DFFRQX2 wait_count_reg_2_ ( .D(n330), .CK(clk_in), .RN(rst_n), .Q(
+        wait_count[2]) );
+  DFFRQX2 wait_count_reg_1_ ( .D(n340), .CK(clk_in), .RN(rst_n), .Q(
+        wait_count[1]) );
+  DFFRQX2 prev_valid_reg ( .D(n320), .CK(clk_in), .RN(rst_n), .Q(prev_valid)
+         );
+  DFFRHQX2 pd_sync_reg ( .D(pd_meta), .CK(clk_in), .RN(rst_n), .Q(pd_sync) );
+  AND2X2 U46 ( .A(n400), .B(enable), .Y(n35) );
+  AND2X2 U45 ( .A(n390), .B(enable), .Y(n340) );
+  AND2X2 U44 ( .A(n380), .B(enable), .Y(n330) );
+  AND2X2 U43 ( .A(n46), .B(enable), .Y(n320) );
+  DFFRHQX2 prev_lead_lag_reg ( .D(n410), .CK(clk_in), .RN(rst_n), .Q(
+        prev_lead_lag) );
+  DFFRHQX2 tdl_code_reg_2_ ( .D(n43), .CK(clk_in), .RN(rst_n), .Q(tdl_code[2])
+         );
+  DFFRQX2 tdl_code_reg_5_ ( .D(n47), .CK(clk_in), .RN(rst_n), .Q(tdl_code[5])
+         );
+  DFFRHQX4 tdl_code_reg_1_ ( .D(n42), .CK(clk_in), .RN(rst_n), .Q(tdl_code[1])
+         );
+  DFFRHQX2 tdl_code_reg_3_ ( .D(n44), .CK(clk_in), .RN(rst_n), .Q(tdl_code[3])
+         );
+  DFFRX1 locked_reg ( .D(n36), .CK(clk_in), .RN(rst_n), .Q(locked), .QN(n57)
+         );
+  DFFRQX2 tdl_code_reg_4_ ( .D(n45), .CK(clk_in), .RN(rst_n), .Q(tdl_code[4])
+         );
+  INVX2 U3 ( .A(n51), .Y(n23) );
+  NOR3X1 U4 ( .A(tdl_code[4]), .B(tdl_code[5]), .C(tdl_code[3]), .Y(n55) );
+  INVX2 U5 ( .A(n53), .Y(n21) );
+  AOI22XL U6 ( .A0(N41), .A1(n14), .B0(N34), .B1(n15), .Y(n17) );
+  AOI211X2 U7 ( .A0(n55), .A1(n56), .B0(n21), .C0(pd_sync), .Y(n24) );
+  BUFX2 U8 ( .A(n11), .Y(n1) );
+  CLKAND2X2 U9 ( .A(n24), .B(n11), .Y(n14) );
+  NOR2X1 U10 ( .A(n5), .B(tdl_code[4]), .Y(n52) );
+  AOI22XL U11 ( .A0(n14), .A1(N40), .B0(n15), .B1(N33), .Y(n25) );
+  OAI2B1X1 U12 ( .A1N(tdl_code[4]), .A0(n1), .B0(n25), .Y(n45) );
+  AND2X2 U13 ( .A(wait_count[0]), .B(wait_count[1]), .Y(n2) );
+  INVX2 U14 ( .A(n300), .Y(n15) );
+  OAI21XL U15 ( .A0(n11), .A1(n16), .B0(n17), .Y(n47) );
+  OR2XL U16 ( .A(n11), .B(n28), .Y(n3) );
+  NAND2X2 U17 ( .A(n3), .B(n29), .Y(n42) );
+  OR2XL U18 ( .A(n11), .B(n12), .Y(n4) );
+  CLKNAND2X2 U19 ( .A(n4), .B(n13), .Y(n48) );
+  AOI22XL U20 ( .A0(n12), .A1(n14), .B0(n12), .B1(n15), .Y(n13) );
+  AOI22XL U21 ( .A0(N38), .A1(n14), .B0(n15), .B1(N31), .Y(n27) );
+  OAI211X2 U22 ( .A0(n52), .A1(n16), .B0(n53), .C0(pd_sync), .Y(n51) );
+  AND3X2 U23 ( .A(tdl_code[3]), .B(tdl_code[2]), .C(n54), .Y(n5) );
+  NAND2X2 U24 ( .A(n57), .B(n2), .Y(n49) );
+  OAI2B1XL U25 ( .A1N(tdl_code[2]), .A0(n1), .B0(n27), .Y(n43) );
+  OR3X2 U26 ( .A(n310), .B(n49), .C(n50), .Y(n22) );
+  ADDHXL U27 ( .A(tdl_code[2]), .B(add_377_carry[2]), .CO(add_377_carry[3]), 
+        .S(N31) );
+  ADDHXL U28 ( .A(tdl_code[3]), .B(add_377_carry[3]), .CO(add_377_carry[4]), 
+        .S(N32) );
+  ADDHXL U29 ( .A(tdl_code[4]), .B(add_377_carry[4]), .CO(add_377_carry[5]), 
+        .S(N33) );
+  OR2XL U30 ( .A(tdl_code[1]), .B(tdl_code[0]), .Y(n7) );
+  NAND2X2 U31 ( .A(n23), .B(n11), .Y(n300) );
+  OAI2B1XL U32 ( .A1N(tdl_code[3]), .A0(n1), .B0(n26), .Y(n44) );
+  INVX2 U33 ( .A(N32), .Y(n6) );
+  AOI2BB2X2 U34 ( .B0(N39), .B1(n14), .A0N(n6), .A1N(n300), .Y(n26) );
+  NOR2XL U35 ( .A(n23), .B(n24), .Y(n19) );
+  XOR2XL U36 ( .A(n50), .B(n49), .Y(n380) );
+  INVX2 U37 ( .A(tdl_code[0]), .Y(n12) );
+  OAI2B1XL U38 ( .A1N(prev_lead_lag), .A0(n1), .B0(n300), .Y(n410) );
+  OAI2BB1XL U39 ( .A0N(tdl_code[0]), .A1N(tdl_code[1]), .B0(n7), .Y(N37) );
+  ADDHXL U40 ( .A(tdl_code[1]), .B(tdl_code[0]), .CO(add_377_carry[2]), .S(N30) );
+  NOR3XL U41 ( .A(tdl_code[1]), .B(tdl_code[2]), .C(tdl_code[0]), .Y(n56) );
+  AOI2BB1X4 U42 ( .A0N(n23), .A1N(n24), .B0(n22), .Y(n11) );
+  XOR2X1 U48 ( .A(add_377_carry[5]), .B(tdl_code[5]), .Y(N34) );
+  OR2X1 U49 ( .A(n7), .B(tdl_code[2]), .Y(n8) );
+  OAI2BB1X1 U50 ( .A0N(n7), .A1N(tdl_code[2]), .B0(n8), .Y(N38) );
+  OR2X1 U51 ( .A(n8), .B(tdl_code[3]), .Y(n9) );
+  OAI2BB1X1 U52 ( .A0N(n8), .A1N(tdl_code[3]), .B0(n9), .Y(N39) );
+  XNOR2X1 U53 ( .A(tdl_code[4]), .B(n9), .Y(N40) );
+  NOR2X1 U54 ( .A(tdl_code[4]), .B(n9), .Y(n10) );
+  XOR2X1 U55 ( .A(tdl_code[5]), .B(n10), .Y(N41) );
+  MXI2X1 U56 ( .A(n18), .B(n19), .S0(n20), .Y(n46) );
+  NOR2X1 U57 ( .A(n21), .B(n22), .Y(n20) );
+  CLKINVX1 U58 ( .A(prev_valid), .Y(n18) );
+  AOI22XL U59 ( .A0(N37), .A1(n14), .B0(N30), .B1(n15), .Y(n29) );
+  CLKINVX1 U60 ( .A(tdl_code[5]), .Y(n16) );
+  NOR2X1 U61 ( .A(n12), .B(n28), .Y(n54) );
+  CLKINVX1 U62 ( .A(tdl_code[1]), .Y(n28) );
+  XOR2X1 U63 ( .A(n57), .B(wait_count[0]), .Y(n400) );
+  XNOR2X1 U64 ( .A(wait_count[1]), .B(n58), .Y(n390) );
+  CLKNAND2X2 U65 ( .A(wait_count[0]), .B(n57), .Y(n58) );
+  OAI31X1 U66 ( .A0(n59), .A1(n50), .A2(n53), .B0(n57), .Y(n36) );
+  CLKNAND2X2 U67 ( .A(prev_valid), .B(n60), .Y(n53) );
+  XOR2X1 U68 ( .A(prev_lead_lag), .B(pd_sync), .Y(n60) );
+  CLKINVX1 U69 ( .A(wait_count[2]), .Y(n50) );
+  NAND3XL U70 ( .A(wait_count[1]), .B(wait_count[0]), .C(enable), .Y(n59) );
+  NOR3X1 U71 ( .A(n310), .B(locked), .C(n61), .Y(measure_active) );
+  NOR3X1 U72 ( .A(wait_count[0]), .B(wait_count[2]), .C(wait_count[1]), .Y(n61) );
+  CLKINVX1 U73 ( .A(enable), .Y(n310) );
+endmodule
+
+
+module tdl_0 ( tdl_code, tdl_in, tdl_out );
+  input [5:0] tdl_code;
+  input tdl_in;
+  output tdl_out;
+  wire   n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n16, n17, n18,
+         n19, n20, n21, n22, n23, n24, n25, n26, n27, n28, n29, n30, n31, n32,
+         n33, n34, n35, n36, n37, n38, n39, n40, n41, n42, n43, n44, n45, n1,
+         n2, n3;
+  wire   [16:1] coarse_node;
+  wire   [15:0] coarse_mid;
+  wire   [15:0] fine1_node;
+  wire   [15:0] fine2_node;
+
+  CLKBUFX4 u_clkbuf0_0 ( .A(tdl_in), .Y(coarse_mid[0]) );
+  CLKBUFX4 u_clkbuf0_1 ( .A(coarse_mid[0]), .Y(coarse_node[1]) );
+  TBUFX16 u_tbuf0_0 ( .A(coarse_node[1]), .OE(1'b1), .Y(fine1_node[0]) );
+  TBUFX16 u_tbuf0_1 ( .A(fine1_node[0]), .OE(1'b1), .Y(fine2_node[0]) );
+  CLKBUFX4 u_clkbuf1_0 ( .A(coarse_node[1]), .Y(coarse_mid[1]) );
+  CLKBUFX4 u_clkbuf1_1 ( .A(coarse_mid[1]), .Y(coarse_node[2]) );
+  TBUFX16 u_tbuf1_0 ( .A(coarse_node[2]), .OE(1'b1), .Y(fine1_node[1]) );
+  TBUFX16 u_tbuf1_1 ( .A(fine1_node[1]), .OE(1'b1), .Y(fine2_node[1]) );
+  CLKBUFX4 u_clkbuf2_0 ( .A(coarse_node[2]), .Y(coarse_mid[2]) );
+  CLKBUFX4 u_clkbuf2_1 ( .A(coarse_mid[2]), .Y(coarse_node[3]) );
+  TBUFX16 u_tbuf2_0 ( .A(coarse_node[3]), .OE(1'b1), .Y(fine1_node[2]) );
+  TBUFX16 u_tbuf2_1 ( .A(fine1_node[2]), .OE(1'b1), .Y(fine2_node[2]) );
+  CLKBUFX4 u_clkbuf3_0 ( .A(coarse_node[3]), .Y(coarse_mid[3]) );
+  CLKBUFX4 u_clkbuf3_1 ( .A(coarse_mid[3]), .Y(coarse_node[4]) );
+  TBUFX16 u_tbuf3_0 ( .A(coarse_node[4]), .OE(1'b1), .Y(fine1_node[3]) );
+  TBUFX16 u_tbuf3_1 ( .A(fine1_node[3]), .OE(1'b1), .Y(fine2_node[3]) );
+  CLKBUFX4 u_clkbuf4_0 ( .A(coarse_node[4]), .Y(coarse_mid[4]) );
+  CLKBUFX4 u_clkbuf4_1 ( .A(coarse_mid[4]), .Y(coarse_node[5]) );
+  TBUFX16 u_tbuf4_0 ( .A(coarse_node[5]), .OE(1'b1), .Y(fine1_node[4]) );
+  TBUFX16 u_tbuf4_1 ( .A(fine1_node[4]), .OE(1'b1), .Y(fine2_node[4]) );
+  CLKBUFX4 u_clkbuf5_0 ( .A(coarse_node[5]), .Y(coarse_mid[5]) );
+  CLKBUFX4 u_clkbuf5_1 ( .A(coarse_mid[5]), .Y(coarse_node[6]) );
+  TBUFX16 u_tbuf5_0 ( .A(coarse_node[6]), .OE(1'b1), .Y(fine1_node[5]) );
+  TBUFX16 u_tbuf5_1 ( .A(fine1_node[5]), .OE(1'b1), .Y(fine2_node[5]) );
+  CLKBUFX4 u_clkbuf6_0 ( .A(coarse_node[6]), .Y(coarse_mid[6]) );
+  CLKBUFX4 u_clkbuf6_1 ( .A(coarse_mid[6]), .Y(coarse_node[7]) );
+  TBUFX16 u_tbuf6_0 ( .A(coarse_node[7]), .OE(1'b1), .Y(fine1_node[6]) );
+  TBUFX16 u_tbuf6_1 ( .A(fine1_node[6]), .OE(1'b1), .Y(fine2_node[6]) );
+  CLKBUFX4 u_clkbuf7_0 ( .A(coarse_node[7]), .Y(coarse_mid[7]) );
+  CLKBUFX4 u_clkbuf7_1 ( .A(coarse_mid[7]), .Y(coarse_node[8]) );
+  TBUFX16 u_tbuf7_0 ( .A(coarse_node[8]), .OE(1'b1), .Y(fine1_node[7]) );
+  TBUFX16 u_tbuf7_1 ( .A(fine1_node[7]), .OE(1'b1), .Y(fine2_node[7]) );
+  CLKBUFX4 u_clkbuf8_0 ( .A(coarse_node[8]), .Y(coarse_mid[8]) );
+  CLKBUFX4 u_clkbuf8_1 ( .A(coarse_mid[8]), .Y(coarse_node[9]) );
+  TBUFX16 u_tbuf8_0 ( .A(coarse_node[9]), .OE(1'b1), .Y(fine1_node[8]) );
+  TBUFX16 u_tbuf8_1 ( .A(fine1_node[8]), .OE(1'b1), .Y(fine2_node[8]) );
+  CLKBUFX4 u_clkbuf9_0 ( .A(coarse_node[9]), .Y(coarse_mid[9]) );
+  CLKBUFX4 u_clkbuf9_1 ( .A(coarse_mid[9]), .Y(coarse_node[10]) );
+  TBUFX16 u_tbuf9_0 ( .A(coarse_node[10]), .OE(1'b1), .Y(fine1_node[9]) );
+  TBUFX16 u_tbuf9_1 ( .A(fine1_node[9]), .OE(1'b1), .Y(fine2_node[9]) );
+  CLKBUFX4 u_clkbuf10_0 ( .A(coarse_node[10]), .Y(coarse_mid[10]) );
+  CLKBUFX4 u_clkbuf10_1 ( .A(coarse_mid[10]), .Y(coarse_node[11]) );
+  TBUFX16 u_tbuf10_0 ( .A(coarse_node[11]), .OE(1'b1), .Y(fine1_node[10]) );
+  TBUFX16 u_tbuf10_1 ( .A(fine1_node[10]), .OE(1'b1), .Y(fine2_node[10]) );
+  CLKBUFX4 u_clkbuf11_0 ( .A(coarse_node[11]), .Y(coarse_mid[11]) );
+  CLKBUFX4 u_clkbuf11_1 ( .A(coarse_mid[11]), .Y(coarse_node[12]) );
+  TBUFX16 u_tbuf11_0 ( .A(coarse_node[12]), .OE(1'b1), .Y(fine1_node[11]) );
+  TBUFX16 u_tbuf11_1 ( .A(fine1_node[11]), .OE(1'b1), .Y(fine2_node[11]) );
+  CLKBUFX4 u_clkbuf12_0 ( .A(coarse_node[12]), .Y(coarse_mid[12]) );
+  CLKBUFX4 u_clkbuf12_1 ( .A(coarse_mid[12]), .Y(coarse_node[13]) );
+  TBUFX16 u_tbuf12_0 ( .A(coarse_node[13]), .OE(1'b1), .Y(fine1_node[12]) );
+  TBUFX16 u_tbuf12_1 ( .A(fine1_node[12]), .OE(1'b1), .Y(fine2_node[12]) );
+  CLKBUFX4 u_clkbuf13_0 ( .A(coarse_node[13]), .Y(coarse_mid[13]) );
+  CLKBUFX4 u_clkbuf13_1 ( .A(coarse_mid[13]), .Y(coarse_node[14]) );
+  TBUFX16 u_tbuf13_0 ( .A(coarse_node[14]), .OE(1'b1), .Y(fine1_node[13]) );
+  TBUFX16 u_tbuf13_1 ( .A(fine1_node[13]), .OE(1'b1), .Y(fine2_node[13]) );
+  CLKBUFX4 u_clkbuf14_0 ( .A(coarse_node[14]), .Y(coarse_mid[14]) );
+  CLKBUFX4 u_clkbuf14_1 ( .A(coarse_mid[14]), .Y(coarse_node[15]) );
+  TBUFX16 u_tbuf14_0 ( .A(coarse_node[15]), .OE(1'b1), .Y(fine1_node[14]) );
+  TBUFX16 u_tbuf14_1 ( .A(fine1_node[14]), .OE(1'b1), .Y(fine2_node[14]) );
+  CLKBUFX4 u_clkbuf15_0 ( .A(coarse_node[15]), .Y(coarse_mid[15]) );
+  CLKBUFX4 u_clkbuf15_1 ( .A(coarse_mid[15]), .Y(coarse_node[16]) );
+  TBUFX16 u_tbuf15_0 ( .A(coarse_node[16]), .OE(1'b1), .Y(fine1_node[15]) );
+  TBUFX16 u_tbuf15_1 ( .A(fine1_node[15]), .OE(1'b1), .Y(fine2_node[15]) );
+  OAI22XL U2 ( .A0(n7), .A1(n1), .B0(tdl_code[0]), .B1(n8), .Y(n6) );
+  INVXL U3 ( .A(tdl_code[0]), .Y(n1) );
+  INVXL U4 ( .A(tdl_code[1]), .Y(n3) );
+  AND2X2 U5 ( .A(n45), .B(n39), .Y(n23) );
+  AND2X2 U6 ( .A(n43), .B(n42), .Y(n20) );
+  AND2X2 U7 ( .A(n41), .B(n40), .Y(n14) );
+  AND2X2 U8 ( .A(n44), .B(n40), .Y(n17) );
+  AND2X2 U9 ( .A(n45), .B(n42), .Y(n24) );
+  AND2X2 U10 ( .A(n43), .B(n44), .Y(n21) );
+  AND2X2 U11 ( .A(n43), .B(n41), .Y(n18) );
+  AND2X2 U12 ( .A(n45), .B(n41), .Y(n19) );
+  AND2X2 U13 ( .A(n43), .B(n39), .Y(n16) );
+  AND2X2 U14 ( .A(n39), .B(n40), .Y(n15) );
+  AND2X2 U15 ( .A(n42), .B(n40), .Y(n13) );
+  AND2X2 U16 ( .A(n45), .B(n44), .Y(n22) );
+  AOI222XL U17 ( .A0(fine1_node[0]), .A1(n22), .B0(fine2_node[2]), .B1(n23), 
+        .C0(coarse_node[3]), .C1(n24), .Y(n35) );
+  AOI222XL U18 ( .A0(coarse_node[1]), .A1(n22), .B0(coarse_node[4]), .B1(n23), 
+        .C0(fine1_node[1]), .C1(n24), .Y(n31) );
+  AOI222XL U19 ( .A0(fine2_node[11]), .A1(n13), .B0(coarse_node[16]), .B1(n14), 
+        .C0(fine1_node[13]), .C1(n15), .Y(n34) );
+  AOI222XL U20 ( .A0(fine2_node[3]), .A1(n19), .B0(coarse_node[8]), .B1(n20), 
+        .C0(fine1_node[5]), .C1(n21), .Y(n32) );
+  AOI222XL U21 ( .A0(fine2_node[7]), .A1(n16), .B0(coarse_node[12]), .B1(n17), 
+        .C0(fine1_node[9]), .C1(n18), .Y(n33) );
+  AOI222XL U22 ( .A0(fine1_node[11]), .A1(n13), .B0(fine2_node[13]), .B1(n14), 
+        .C0(coarse_node[14]), .C1(n15), .Y(n12) );
+  AOI222XL U23 ( .A0(coarse_node[13]), .A1(n13), .B0(fine1_node[14]), .B1(n14), 
+        .C0(fine2_node[12]), .C1(n15), .Y(n28) );
+  AOI222XL U24 ( .A0(fine1_node[7]), .A1(n16), .B0(fine2_node[9]), .B1(n17), 
+        .C0(coarse_node[10]), .C1(n18), .Y(n11) );
+  AOI222XL U25 ( .A0(coarse_node[9]), .A1(n16), .B0(fine1_node[10]), .B1(n17), 
+        .C0(fine2_node[8]), .C1(n18), .Y(n27) );
+  AOI222XL U26 ( .A0(n22), .A1(tdl_in), .B0(fine2_node[1]), .B1(n23), .C0(
+        coarse_node[2]), .C1(n24), .Y(n9) );
+  AOI222XL U27 ( .A0(coarse_mid[0]), .A1(n22), .B0(fine1_node[2]), .B1(n23), 
+        .C0(fine2_node[0]), .C1(n24), .Y(n25) );
+  AOI222XL U28 ( .A0(fine1_node[3]), .A1(n19), .B0(fine2_node[5]), .B1(n20), 
+        .C0(coarse_node[6]), .C1(n21), .Y(n10) );
+  AND4X2 U29 ( .A(n25), .B(n26), .C(n27), .D(n28), .Y(n7) );
+  AND4X2 U30 ( .A(n9), .B(n10), .C(n11), .D(n12), .Y(n8) );
+  AOI222XL U31 ( .A0(coarse_node[5]), .A1(n19), .B0(fine1_node[6]), .B1(n20), 
+        .C0(fine2_node[4]), .C1(n21), .Y(n26) );
+  NAND4X2 U32 ( .A(n35), .B(n36), .C(n37), .D(n38), .Y(n29) );
+  AOI222XL U33 ( .A0(fine1_node[8]), .A1(n16), .B0(fine2_node[10]), .B1(n17), 
+        .C0(coarse_node[11]), .C1(n18), .Y(n37) );
+  AOI222XL U34 ( .A0(fine1_node[4]), .A1(n19), .B0(fine2_node[6]), .B1(n20), 
+        .C0(coarse_node[7]), .C1(n21), .Y(n36) );
+  AOI222XL U35 ( .A0(fine1_node[12]), .A1(n13), .B0(fine1_node[15]), .B1(n14), 
+        .C0(coarse_node[15]), .C1(n15), .Y(n38) );
+  NOR2X2 U36 ( .A(tdl_code[5]), .B(tdl_code[4]), .Y(n45) );
+  NOR2BX1 U37 ( .AN(tdl_code[4]), .B(tdl_code[5]), .Y(n43) );
+  NOR2BX1 U38 ( .AN(tdl_code[5]), .B(tdl_code[4]), .Y(n40) );
+  NOR2X2 U39 ( .A(tdl_code[3]), .B(tdl_code[2]), .Y(n44) );
+  NOR2BX1 U40 ( .AN(tdl_code[2]), .B(tdl_code[3]), .Y(n42) );
+  NOR2BX1 U41 ( .AN(tdl_code[2]), .B(n2), .Y(n41) );
+  NOR2X2 U42 ( .A(n2), .B(tdl_code[2]), .Y(n39) );
+  INVX2 U43 ( .A(tdl_code[3]), .Y(n2) );
+  OAI21X1 U44 ( .A0(n4), .A1(n3), .B0(n5), .Y(tdl_out) );
+  AOI22XL U45 ( .A0(tdl_code[0]), .A1(n29), .B0(n30), .B1(n1), .Y(n4) );
+  AOI32XL U46 ( .A0(tdl_code[5]), .A1(tdl_code[4]), .A2(tdl_in), .B0(n6), .B1(
+        n3), .Y(n5) );
+  NAND4X2 U47 ( .A(n31), .B(n32), .C(n33), .D(n34), .Y(n30) );
+endmodule
+
+
+module tdl_1 ( tdl_code, tdl_in, tdl_out );
+  input [5:0] tdl_code;
+  input tdl_in;
+  output tdl_out;
+  wire   n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n16, n17, n18,
+         n19, n20, n21, n22, n23, n24, n25, n26, n27, n28, n29, n30, n31, n32,
+         n33, n34, n35, n36, n37, n38, n39, n40, n41, n42, n43, n44, n45, n1,
+         n2, n3;
+  wire   [16:1] coarse_node;
+  wire   [15:0] coarse_mid;
+  wire   [15:0] fine1_node;
+  wire   [15:0] fine2_node;
+
+  CLKBUFX4 u_clkbuf0_0 ( .A(tdl_in), .Y(coarse_mid[0]) );
+  CLKBUFX4 u_clkbuf0_1 ( .A(coarse_mid[0]), .Y(coarse_node[1]) );
+  TBUFX16 u_tbuf0_0 ( .A(coarse_node[1]), .OE(1'b1), .Y(fine1_node[0]) );
+  TBUFX16 u_tbuf0_1 ( .A(fine1_node[0]), .OE(1'b1), .Y(fine2_node[0]) );
+  CLKBUFX4 u_clkbuf1_0 ( .A(coarse_node[1]), .Y(coarse_mid[1]) );
+  CLKBUFX4 u_clkbuf1_1 ( .A(coarse_mid[1]), .Y(coarse_node[2]) );
+  TBUFX16 u_tbuf1_0 ( .A(coarse_node[2]), .OE(1'b1), .Y(fine1_node[1]) );
+  TBUFX16 u_tbuf1_1 ( .A(fine1_node[1]), .OE(1'b1), .Y(fine2_node[1]) );
+  CLKBUFX4 u_clkbuf2_0 ( .A(coarse_node[2]), .Y(coarse_mid[2]) );
+  CLKBUFX4 u_clkbuf2_1 ( .A(coarse_mid[2]), .Y(coarse_node[3]) );
+  TBUFX16 u_tbuf2_0 ( .A(coarse_node[3]), .OE(1'b1), .Y(fine1_node[2]) );
+  TBUFX16 u_tbuf2_1 ( .A(fine1_node[2]), .OE(1'b1), .Y(fine2_node[2]) );
+  CLKBUFX4 u_clkbuf3_0 ( .A(coarse_node[3]), .Y(coarse_mid[3]) );
+  CLKBUFX4 u_clkbuf3_1 ( .A(coarse_mid[3]), .Y(coarse_node[4]) );
+  TBUFX16 u_tbuf3_0 ( .A(coarse_node[4]), .OE(1'b1), .Y(fine1_node[3]) );
+  TBUFX16 u_tbuf3_1 ( .A(fine1_node[3]), .OE(1'b1), .Y(fine2_node[3]) );
+  CLKBUFX4 u_clkbuf4_0 ( .A(coarse_node[4]), .Y(coarse_mid[4]) );
+  CLKBUFX4 u_clkbuf4_1 ( .A(coarse_mid[4]), .Y(coarse_node[5]) );
+  TBUFX16 u_tbuf4_0 ( .A(coarse_node[5]), .OE(1'b1), .Y(fine1_node[4]) );
+  TBUFX16 u_tbuf4_1 ( .A(fine1_node[4]), .OE(1'b1), .Y(fine2_node[4]) );
+  CLKBUFX4 u_clkbuf5_0 ( .A(coarse_node[5]), .Y(coarse_mid[5]) );
+  CLKBUFX4 u_clkbuf5_1 ( .A(coarse_mid[5]), .Y(coarse_node[6]) );
+  TBUFX16 u_tbuf5_0 ( .A(coarse_node[6]), .OE(1'b1), .Y(fine1_node[5]) );
+  TBUFX16 u_tbuf5_1 ( .A(fine1_node[5]), .OE(1'b1), .Y(fine2_node[5]) );
+  CLKBUFX4 u_clkbuf6_0 ( .A(coarse_node[6]), .Y(coarse_mid[6]) );
+  CLKBUFX4 u_clkbuf6_1 ( .A(coarse_mid[6]), .Y(coarse_node[7]) );
+  TBUFX16 u_tbuf6_0 ( .A(coarse_node[7]), .OE(1'b1), .Y(fine1_node[6]) );
+  TBUFX16 u_tbuf6_1 ( .A(fine1_node[6]), .OE(1'b1), .Y(fine2_node[6]) );
+  CLKBUFX4 u_clkbuf7_0 ( .A(coarse_node[7]), .Y(coarse_mid[7]) );
+  CLKBUFX4 u_clkbuf7_1 ( .A(coarse_mid[7]), .Y(coarse_node[8]) );
+  TBUFX16 u_tbuf7_0 ( .A(coarse_node[8]), .OE(1'b1), .Y(fine1_node[7]) );
+  TBUFX16 u_tbuf7_1 ( .A(fine1_node[7]), .OE(1'b1), .Y(fine2_node[7]) );
+  CLKBUFX4 u_clkbuf8_0 ( .A(coarse_node[8]), .Y(coarse_mid[8]) );
+  CLKBUFX4 u_clkbuf8_1 ( .A(coarse_mid[8]), .Y(coarse_node[9]) );
+  TBUFX16 u_tbuf8_0 ( .A(coarse_node[9]), .OE(1'b1), .Y(fine1_node[8]) );
+  TBUFX16 u_tbuf8_1 ( .A(fine1_node[8]), .OE(1'b1), .Y(fine2_node[8]) );
+  CLKBUFX4 u_clkbuf9_0 ( .A(coarse_node[9]), .Y(coarse_mid[9]) );
+  CLKBUFX4 u_clkbuf9_1 ( .A(coarse_mid[9]), .Y(coarse_node[10]) );
+  TBUFX16 u_tbuf9_0 ( .A(coarse_node[10]), .OE(1'b1), .Y(fine1_node[9]) );
+  TBUFX16 u_tbuf9_1 ( .A(fine1_node[9]), .OE(1'b1), .Y(fine2_node[9]) );
+  CLKBUFX4 u_clkbuf10_0 ( .A(coarse_node[10]), .Y(coarse_mid[10]) );
+  CLKBUFX4 u_clkbuf10_1 ( .A(coarse_mid[10]), .Y(coarse_node[11]) );
+  TBUFX16 u_tbuf10_0 ( .A(coarse_node[11]), .OE(1'b1), .Y(fine1_node[10]) );
+  TBUFX16 u_tbuf10_1 ( .A(fine1_node[10]), .OE(1'b1), .Y(fine2_node[10]) );
+  CLKBUFX4 u_clkbuf11_0 ( .A(coarse_node[11]), .Y(coarse_mid[11]) );
+  CLKBUFX4 u_clkbuf11_1 ( .A(coarse_mid[11]), .Y(coarse_node[12]) );
+  TBUFX16 u_tbuf11_0 ( .A(coarse_node[12]), .OE(1'b1), .Y(fine1_node[11]) );
+  TBUFX16 u_tbuf11_1 ( .A(fine1_node[11]), .OE(1'b1), .Y(fine2_node[11]) );
+  CLKBUFX4 u_clkbuf12_0 ( .A(coarse_node[12]), .Y(coarse_mid[12]) );
+  CLKBUFX4 u_clkbuf12_1 ( .A(coarse_mid[12]), .Y(coarse_node[13]) );
+  TBUFX16 u_tbuf12_0 ( .A(coarse_node[13]), .OE(1'b1), .Y(fine1_node[12]) );
+  TBUFX16 u_tbuf12_1 ( .A(fine1_node[12]), .OE(1'b1), .Y(fine2_node[12]) );
+  CLKBUFX4 u_clkbuf13_0 ( .A(coarse_node[13]), .Y(coarse_mid[13]) );
+  CLKBUFX4 u_clkbuf13_1 ( .A(coarse_mid[13]), .Y(coarse_node[14]) );
+  TBUFX16 u_tbuf13_0 ( .A(coarse_node[14]), .OE(1'b1), .Y(fine1_node[13]) );
+  TBUFX16 u_tbuf13_1 ( .A(fine1_node[13]), .OE(1'b1), .Y(fine2_node[13]) );
+  CLKBUFX4 u_clkbuf14_0 ( .A(coarse_node[14]), .Y(coarse_mid[14]) );
+  CLKBUFX4 u_clkbuf14_1 ( .A(coarse_mid[14]), .Y(coarse_node[15]) );
+  TBUFX16 u_tbuf14_0 ( .A(coarse_node[15]), .OE(1'b1), .Y(fine1_node[14]) );
+  TBUFX16 u_tbuf14_1 ( .A(fine1_node[14]), .OE(1'b1), .Y(fine2_node[14]) );
+  CLKBUFX4 u_clkbuf15_0 ( .A(coarse_node[15]), .Y(coarse_mid[15]) );
+  CLKBUFX4 u_clkbuf15_1 ( .A(coarse_mid[15]), .Y(coarse_node[16]) );
+  TBUFX16 u_tbuf15_0 ( .A(coarse_node[16]), .OE(1'b1), .Y(fine1_node[15]) );
+  TBUFX16 u_tbuf15_1 ( .A(fine1_node[15]), .OE(1'b1), .Y(fine2_node[15]) );
+  NOR2BXL U2 ( .AN(tdl_code[5]), .B(tdl_code[4]), .Y(n40) );
+  NOR2BXL U3 ( .AN(tdl_code[4]), .B(tdl_code[5]), .Y(n43) );
+  INVXL U4 ( .A(tdl_code[1]), .Y(n3) );
+  NOR2BXL U5 ( .AN(tdl_code[2]), .B(tdl_code[3]), .Y(n42) );
+  NOR2BXL U6 ( .AN(tdl_code[2]), .B(n2), .Y(n41) );
+  NOR2XL U7 ( .A(tdl_code[5]), .B(tdl_code[4]), .Y(n45) );
+  NOR2XL U8 ( .A(tdl_code[3]), .B(tdl_code[2]), .Y(n44) );
+  NOR2XL U9 ( .A(n2), .B(tdl_code[2]), .Y(n39) );
+  INVXL U10 ( .A(tdl_code[3]), .Y(n2) );
+  INVXL U11 ( .A(tdl_code[0]), .Y(n1) );
+  AND2X2 U12 ( .A(n45), .B(n39), .Y(n23) );
+  AND2X2 U13 ( .A(n43), .B(n42), .Y(n20) );
+  AND2X2 U14 ( .A(n41), .B(n40), .Y(n14) );
+  AND2X2 U15 ( .A(n44), .B(n40), .Y(n17) );
+  AND2X2 U16 ( .A(n45), .B(n42), .Y(n24) );
+  AND2X2 U17 ( .A(n43), .B(n44), .Y(n21) );
+  AND2X2 U18 ( .A(n43), .B(n41), .Y(n18) );
+  AND2X2 U19 ( .A(n45), .B(n41), .Y(n19) );
+  AND2X2 U20 ( .A(n43), .B(n39), .Y(n16) );
+  AND2X2 U21 ( .A(n39), .B(n40), .Y(n15) );
+  AND2X2 U22 ( .A(n42), .B(n40), .Y(n13) );
+  AND2X2 U23 ( .A(n45), .B(n44), .Y(n22) );
+  AOI222XL U24 ( .A0(coarse_node[1]), .A1(n22), .B0(coarse_node[4]), .B1(n23), 
+        .C0(fine1_node[1]), .C1(n24), .Y(n31) );
+  AOI222XL U25 ( .A0(fine1_node[0]), .A1(n22), .B0(fine2_node[2]), .B1(n23), 
+        .C0(coarse_node[3]), .C1(n24), .Y(n35) );
+  AND4X2 U26 ( .A(n9), .B(n10), .C(n11), .D(n12), .Y(n8) );
+  AND4X2 U27 ( .A(n25), .B(n26), .C(n27), .D(n28), .Y(n7) );
+  AOI222XL U28 ( .A0(fine1_node[3]), .A1(n19), .B0(fine2_node[5]), .B1(n20), 
+        .C0(coarse_node[6]), .C1(n21), .Y(n10) );
+  AOI222XL U29 ( .A0(coarse_node[13]), .A1(n13), .B0(fine1_node[14]), .B1(n14), 
+        .C0(fine2_node[12]), .C1(n15), .Y(n28) );
+  AOI222XL U30 ( .A0(fine1_node[11]), .A1(n13), .B0(fine2_node[13]), .B1(n14), 
+        .C0(coarse_node[14]), .C1(n15), .Y(n12) );
+  AOI222XL U31 ( .A0(coarse_node[9]), .A1(n16), .B0(fine1_node[10]), .B1(n17), 
+        .C0(fine2_node[8]), .C1(n18), .Y(n27) );
+  AOI222XL U32 ( .A0(fine1_node[7]), .A1(n16), .B0(fine2_node[9]), .B1(n17), 
+        .C0(coarse_node[10]), .C1(n18), .Y(n11) );
+  AOI222XL U33 ( .A0(coarse_mid[0]), .A1(n22), .B0(fine1_node[2]), .B1(n23), 
+        .C0(fine2_node[0]), .C1(n24), .Y(n25) );
+  AOI222XL U34 ( .A0(n22), .A1(tdl_in), .B0(fine2_node[1]), .B1(n23), .C0(
+        coarse_node[2]), .C1(n24), .Y(n9) );
+  AOI222XL U35 ( .A0(coarse_node[5]), .A1(n19), .B0(fine1_node[6]), .B1(n20), 
+        .C0(fine2_node[4]), .C1(n21), .Y(n26) );
+  NAND4X2 U36 ( .A(n31), .B(n32), .C(n33), .D(n34), .Y(n30) );
+  AOI222XL U37 ( .A0(fine2_node[7]), .A1(n16), .B0(coarse_node[12]), .B1(n17), 
+        .C0(fine1_node[9]), .C1(n18), .Y(n33) );
+  AOI222XL U38 ( .A0(fine2_node[3]), .A1(n19), .B0(coarse_node[8]), .B1(n20), 
+        .C0(fine1_node[5]), .C1(n21), .Y(n32) );
+  AOI222XL U39 ( .A0(fine2_node[11]), .A1(n13), .B0(coarse_node[16]), .B1(n14), 
+        .C0(fine1_node[13]), .C1(n15), .Y(n34) );
+  NAND4X2 U40 ( .A(n35), .B(n36), .C(n37), .D(n38), .Y(n29) );
+  AOI222XL U41 ( .A0(fine1_node[8]), .A1(n16), .B0(fine2_node[10]), .B1(n17), 
+        .C0(coarse_node[11]), .C1(n18), .Y(n37) );
+  AOI222XL U42 ( .A0(fine1_node[4]), .A1(n19), .B0(fine2_node[6]), .B1(n20), 
+        .C0(coarse_node[7]), .C1(n21), .Y(n36) );
+  AOI222XL U43 ( .A0(fine1_node[12]), .A1(n13), .B0(fine1_node[15]), .B1(n14), 
+        .C0(coarse_node[15]), .C1(n15), .Y(n38) );
+  OAI21X1 U44 ( .A0(n4), .A1(n3), .B0(n5), .Y(tdl_out) );
+  AOI32XL U45 ( .A0(tdl_code[5]), .A1(tdl_code[4]), .A2(tdl_in), .B0(n6), .B1(
+        n3), .Y(n5) );
+  OAI22XL U46 ( .A0(n7), .A1(n1), .B0(tdl_code[0]), .B1(n8), .Y(n6) );
+  AOI22XL U47 ( .A0(tdl_code[0]), .A1(n29), .B0(n30), .B1(n1), .Y(n4) );
+endmodule
+
+
+module pd_0 ( ref_clk, rst_n, fb_clk, lead_lag );
+  input ref_clk, rst_n, fb_clk;
+  output lead_lag;
+  wire   ff_reset_n, up, clk_up, clk_down, u5_out, down, u6_out, u9_out,
+         u8_out, u11_out, u10_out, dummy_out;
+
+  DFFRHQX1 u_ff1 ( .D(1'b1), .CK(fb_clk), .RN(ff_reset_n), .Q(up) );
+  CLKBUFX4 u3 ( .A(up), .Y(clk_up) );
+  NAND2X4 u5 ( .A(clk_up), .B(clk_down), .Y(u5_out) );
+  DFFRHQX1 u_ff2 ( .D(1'b1), .CK(ref_clk), .RN(ff_reset_n), .Q(down) );
+  CLKBUFX4 u4 ( .A(down), .Y(clk_down) );
+  NAND2X4 u6 ( .A(clk_up), .B(clk_down), .Y(u6_out) );
+  AND2X8 u7 ( .A(u5_out), .B(rst_n), .Y(ff_reset_n) );
+  NAND2X4 u8 ( .A(clk_up), .B(u9_out), .Y(u8_out) );
+  NAND2X4 u9 ( .A(clk_down), .B(u8_out), .Y(u9_out) );
+  NAND2X4 u10 ( .A(u8_out), .B(u11_out), .Y(u10_out) );
+  NAND2X4 u11 ( .A(u9_out), .B(u10_out), .Y(u11_out) );
+  CLKBUFX4 u12 ( .A(u10_out), .Y(lead_lag) );
+  CLKBUFX4 u13 ( .A(u11_out), .Y(dummy_out) );
+endmodule
+
+
+module pd_1 ( ref_clk, rst_n, fb_clk, lead_lag );
+  input ref_clk, rst_n, fb_clk;
+  output lead_lag;
+  wire   ff_reset_n, up, clk_up, clk_down, u5_out, down, u6_out, u9_out,
+         u8_out, u11_out, u10_out, dummy_out;
+
+  DFFRHQX1 u_ff1 ( .D(1'b1), .CK(fb_clk), .RN(ff_reset_n), .Q(up) );
+  CLKBUFX4 u3 ( .A(up), .Y(clk_up) );
+  NAND2X4 u5 ( .A(clk_up), .B(clk_down), .Y(u5_out) );
+  DFFRHQX1 u_ff2 ( .D(1'b1), .CK(ref_clk), .RN(ff_reset_n), .Q(down) );
+  CLKBUFX4 u4 ( .A(down), .Y(clk_down) );
+  NAND2X4 u6 ( .A(clk_up), .B(clk_down), .Y(u6_out) );
+  AND2X8 u7 ( .A(u5_out), .B(rst_n), .Y(ff_reset_n) );
+  NAND2X4 u8 ( .A(clk_up), .B(u9_out), .Y(u8_out) );
+  NAND2X4 u9 ( .A(clk_down), .B(u8_out), .Y(u9_out) );
+  NAND2X4 u10 ( .A(u8_out), .B(u11_out), .Y(u10_out) );
+  NAND2X4 u11 ( .A(u9_out), .B(u10_out), .Y(u11_out) );
+  CLKBUFX4 u12 ( .A(u10_out), .Y(lead_lag) );
+  CLKBUFX4 u13 ( .A(u11_out), .Y(dummy_out) );
+endmodule
+

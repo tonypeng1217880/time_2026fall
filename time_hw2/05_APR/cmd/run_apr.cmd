@@ -1,5 +1,5 @@
 #======================================================
-# TSMC 90 nm Innovus initialization for TIME HW1
+# TSMC 90 nm Innovus initialization for Homework #2 two-phase DLL
 #======================================================
 
 set ProcessRoot "/usr/cadtool/ee5216/CBDK_TSMC90GUTM_Arm_f1.0/CIC/SOCE"
@@ -12,7 +12,14 @@ set lefFile "
 "
 
 set topDesign "gcd"
-set verilogFile "./gcd_SYN.v"
+# Resolve the synthesis netlist from this script's own location.  This does
+# not depend on a manually created gcd_SYN.v symlink or on Innovus' cwd.
+set scriptDir [file dirname [file normalize [info script]]]
+set verilogFile [file normalize \
+    [file join $scriptDir .. .. 02_SYN Netlist gcd_SYN.v]]
+if {![file readable $verilogFile]} {
+    error "Synthesis netlist not found: $verilogFile. Run 02_SYN first."
+}
 set ioFile "./gcd.io"
 set pwrNet "VDD"
 set gndNet "VSS"
@@ -34,6 +41,16 @@ set init_pwr_net $pwrNet
 set init_gnd_net $gndNet
 
 init_design -setup {func_mode_max} -hold {func_mode_min}
+
+# Fail immediately if an old I/O file or wrong synthesis netlist was linked.
+foreach port_name {clk_in rst_n clk_o1 clk_o2 locked} {
+    set port_obj [get_ports $port_name]
+    if {[sizeof_collection $port_obj] != 1} {
+        error "Expected top-level port $port_name in gcd_SYN.v"
+    }
+}
+puts "APR preflight passed: gcd ports and 1 GHz MMMC setup are loaded"
+
 save_global gcd.globals
 win
 

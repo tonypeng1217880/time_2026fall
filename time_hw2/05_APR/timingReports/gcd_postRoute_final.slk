@@ -1,0 +1,27 @@
+# Format: clock  timeReq  slackR/slackF  setupR/setupF  instName/pinName   # cycle(s)
+clk_in(R)->clk_in(R)	0.892    */0.017         */0.097         u_ctl1/tdl_code_reg_4_/D    1
+clk_in(R)->clk_in(R)	0.888    0.022/*         0.101/*         u_ctl1/tdl_code_reg_5_/D    1
+clk_in(R)->clk_in(R)	0.897    */0.023         */0.090         u_ctl1/tdl_code_reg_1_/D    1
+clk_in(R)->clk_in(R)	0.843    0.027/*         0.140/*         u_ctl2/tdl_code_reg_5_/D    1
+clk_in(R)->clk_in(R)	0.899    */0.031         */0.088         u_ctl1/tdl_code_reg_0_/D    1
+clk_in(R)->clk_in(R)	0.894    */0.037         */0.094         u_ctl1/tdl_code_reg_2_/D    1
+clk_in(R)->clk_in(R)	0.895    */0.041         */0.094         u_ctl1/tdl_code_reg_3_/D    1
+clk_in(R)->clk_in(R)	0.887    0.059/*         0.100/*         u_ctl1/prev_lead_lag_reg/D    1
+clk_in(F)->clk_in(R)	0.844    0.060/*         0.139/*         u_ctl2/pd_sync_reg/D    1
+clk_in(R)->clk_in(R)	0.847    0.062/*         0.139/*         u_ctl2/tdl_code_reg_4_/D    1
+clk_in(R)->clk_in(R)	0.903    */0.065         */0.084         u_ctl2/tdl_code_reg_2_/D    1
+clk_in(R)->clk_in(R)	0.904    */0.069         */0.083         u_ctl2/tdl_code_reg_3_/D    1
+clk_in(R)->clk_in(R)	0.905    */0.070         */0.083         u_ctl2/tdl_code_reg_1_/D    1
+clk_in(R)->clk_in(R)	0.847    0.095/*         0.139/*         u_ctl2/forward_armed_reg/D    1
+clk_in(R)->clk_in(R)	0.900    */0.107         */0.083         u_ctl2/tdl_code_reg_0_/D    1
+clk_in(F)->clk_in(R)	0.900    0.110/*         0.088/*         u_ctl1/pd_sync_reg/D    1
+clk_in(R)->clk_in(R)	0.840    0.153/*         0.147/*         u_ctl1/prev_valid_reg/D    1
+clk_in(R)->clk_in(R)	0.852    0.153/*         0.134/*         u_ctl2/forward_high_seen_reg/D    1
+clk_in(R)->clk_in(R)	0.844    0.232/*         0.139/*         u_ctl2/wait_count_reg_2_/D    1
+clk_in(R)->clk_in(R)	0.822    0.266/*         0.162/*         u_ctl2/locked_reg/D    1
+clk_in(R)->clk_in(R)	0.821    0.270/*         0.167/*         u_ctl1/wait_count_reg_2_/D    1
+clk_in(R)->clk_in(R)	0.846    0.304/*         0.138/*         u_ctl2/wait_count_reg_1_/D    1
+clk_in(R)->clk_in(R)	0.848    0.363/*         0.140/*         u_ctl1/locked_reg/D    1
+clk_in(R)->clk_in(R)	0.845    0.381/*         0.138/*         u_ctl2/wait_count_reg_0_/D    1
+clk_in(R)->clk_in(R)	0.835    0.403/*         0.153/*         u_ctl1/wait_count_reg_1_/D    1
+clk_in(R)->clk_in(R)	0.836    0.453/*         0.153/*         u_ctl1/wait_count_reg_0_/D    1

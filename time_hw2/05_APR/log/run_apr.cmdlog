@@ -1,0 +1,279 @@
+#######################################################
+#                                                     
+#  Innovus Command Logging File                     
+#  Created on Sun Oct 11 11:23:55 2026                
+#                                                     
+#######################################################
+
+#@(#)CDS: Innovus v20.10-p004_1 (64bit) 05/07/2020 20:02 (Linux 2.6.32-431.11.2.el6.x86_64)
+#@(#)CDS: NanoRoute 20.10-p004_1 NR200413-0234/20_10-UB (database version 18.20.505) {superthreading v1.69}
+#@(#)CDS: AAE 20.10-p005 (64bit) 05/07/2020 (Linux 2.6.32-431.11.2.el6.x86_64)
+#@(#)CDS: CTE 20.10-p005_1 () Apr 14 2020 09:14:28 ( )
+#@(#)CDS: SYNTECH 20.10-b004_1 () Mar 12 2020 22:18:21 ( )
+#@(#)CDS: CPE v20.10-p006
+#@(#)CDS: IQuantus/TQuantus 19.1.3-s155 (64bit) Sun Nov 3 18:26:52 PST 2019 (Linux 2.6.32-431.11.2.el6.x86_64)
+
+set_global _enable_mmmc_by_default_flow      $CTE::mmmc_default
+suppressMessage ENCEXT-2799
+set init_design_uniquify 1
+setDesignMode -process 90
+set init_mmmc_file ./mmmc.view
+set init_lef_file {
+    /usr/cadtool/ee5216/CBDK_TSMC90GUTM_Arm_f1.0/CIC/SOCE/lef/tsmc090lk_9lm_2thick_tech_cic.lef
+    /usr/cadtool/ee5216/CBDK_TSMC90GUTM_Arm_f1.0/CIC/SOCE/lef/tsmc090nvt_macros.lef
+    /usr/cadtool/ee5216/CBDK_TSMC90GUTM_Arm_f1.0/CIC/SOCE/lef/antenna_9lm.lef
+}
+set init_verilog /home/m114/m114061584/time_2026fall/time_hw2/02_SYN/Netlist/gcd_SYN.v
+set init_top_cell gcd
+set init_io_file ./gcd.io
+set init_pwr_net VDD
+set init_gnd_net VSS
+init_design -setup func_mode_max -hold func_mode_min
+save_global gcd.globals
+win
+set init_design_uniquify 1
+setDesignMode -process 90
+setNanoRouteMode -quiet -routeBottomRoutingLayer 1
+setNanoRouteMode -quiet -routeTopRoutingLayer 8
+suppressMessage TECHLIB 1318
+suppressMessage ENCEXT-2799
+floorPlan -r 0.45 0.45 5 5 5 5
+saveDesign ./DBS/gcd_floorplan.inn
+setPinAssignMode -pinEditInBatch true
+editPin -pin clk_in -assign 0.0 12.6 -layer M3 -fixedPin 1 -fixOverlap 1 -snap TRACK
+editPin -pin clk_o1 -assign 0.0 30.24 -layer M3 -fixedPin 1 -fixOverlap 1 -snap TRACK
+editPin -pin clk_o2 -assign 0.0 32.76 -layer M3 -fixedPin 1 -fixOverlap 1 -snap TRACK
+editPin -pin rst_n -assign 0.0 35.28 -layer M3 -fixedPin 1 -fixOverlap 1 -snap TRACK
+editPin -pin locked -assign 0.0 37.8 -layer M3 -fixedPin 1 -fixOverlap 1 -snap TRACK
+setPinAssignMode -pinEditInBatch false
+clearGlobalNets
+globalNetConnect VDD -type pgpin -pin VDD -inst * -module {}
+globalNetConnect VDD -type tiehi -pin VDD -inst * -module {}
+globalNetConnect VSS -type pgpin -pin VSS -inst * -module {}
+globalNetConnect VSS -type tielo -pin VSS -inst * -module {}
+addRing -skip_via_on_wire_shape Noshape -skip_via_on_pin {} -center 1 -stacked_via_top_layer M5 -stacked_via_bottom_layer M1 -type core_rings -jog_distance 0.42 -threshold 0.1 -nets {VDD VSS} -follow core -layer {bottom M5 top M5 right M4 left M4} -width 2 -spacing 0.5 -offset 0.1 -extend_corner {tl lt tr bl br rb lb rt}
+sroute -connect corePin -layerChangeRange {M1 M5} -blockPinTarget nearestTarget -corePinTarget firstAfterRowEnd -allowJogging 1 -crossoverViaLayerRange {M1 M8} -nets {VDD VSS} -allowLayerChange 1 -targetViaLayerRange {M1 M8}
+saveDesign ./DBS/gcd_powerplan.inn
+set_dont_touch $pd_cells true
+set_dont_touch $pd_nets true
+set_dont_touch $pd_cells true
+set_dont_touch $pd_nets true
+set_dont_touch $delay_cells true
+set_dont_touch $delay_nets true
+set_dont_touch $delay_cells true
+set_dont_touch $delay_nets true
+placeInstance u_tdl1/u_clkbuf0_0 12.0 7.52
+placeInstance u_tdl1/u_clkbuf0_1 13.4 7.52
+placeInstance u_tdl1/u_tbuf0_0 10.04 10.04
+placeInstance u_tdl1/u_tbuf0_1 10.04 12.56
+placeInstance u_tdl1/u_clkbuf1_0 18.72 7.52
+placeInstance u_tdl1/u_clkbuf1_1 20.12 7.52
+placeInstance u_tdl1/u_tbuf1_0 16.76 10.04
+placeInstance u_tdl1/u_tbuf1_1 16.76 12.56
+placeInstance u_tdl1/u_clkbuf2_0 25.44 7.52
+placeInstance u_tdl1/u_clkbuf2_1 26.84 7.52
+placeInstance u_tdl1/u_tbuf2_0 23.48 10.04
+placeInstance u_tdl1/u_tbuf2_1 23.48 12.56
+placeInstance u_tdl1/u_clkbuf3_0 32.16 7.52
+placeInstance u_tdl1/u_clkbuf3_1 33.56 7.52
+placeInstance u_tdl1/u_tbuf3_0 30.2 10.04
+placeInstance u_tdl1/u_tbuf3_1 30.2 12.56
+placeInstance u_tdl1/u_clkbuf4_0 38.88 7.52
+placeInstance u_tdl1/u_clkbuf4_1 40.28 7.52
+placeInstance u_tdl1/u_tbuf4_0 36.92 10.04
+placeInstance u_tdl1/u_tbuf4_1 36.92 12.56
+placeInstance u_tdl1/u_clkbuf5_0 45.6 7.52
+placeInstance u_tdl1/u_clkbuf5_1 47.0 7.52
+placeInstance u_tdl1/u_tbuf5_0 43.64 10.04
+placeInstance u_tdl1/u_tbuf5_1 43.64 12.56
+placeInstance u_tdl1/u_clkbuf6_0 52.32 7.52
+placeInstance u_tdl1/u_clkbuf6_1 53.72 7.52
+placeInstance u_tdl1/u_tbuf6_0 50.36 10.04
+placeInstance u_tdl1/u_tbuf6_1 50.36 12.56
+placeInstance u_tdl1/u_clkbuf7_0 59.04 7.52
+placeInstance u_tdl1/u_clkbuf7_1 60.44 7.52
+placeInstance u_tdl1/u_tbuf7_0 57.08 10.04
+placeInstance u_tdl1/u_tbuf7_1 57.08 12.56
+placeInstance u_tdl1/u_clkbuf8_0 65.76 7.52
+placeInstance u_tdl1/u_clkbuf8_1 67.16 7.52
+placeInstance u_tdl1/u_tbuf8_0 63.8 10.04
+placeInstance u_tdl1/u_tbuf8_1 63.8 12.56
+placeInstance u_tdl1/u_clkbuf9_0 72.48 7.52
+placeInstance u_tdl1/u_clkbuf9_1 73.88 7.52
+placeInstance u_tdl1/u_tbuf9_0 70.52 10.04
+placeInstance u_tdl1/u_tbuf9_1 70.52 12.56
+placeInstance u_tdl1/u_clkbuf10_0 79.2 7.52
+placeInstance u_tdl1/u_clkbuf10_1 80.6 7.52
+placeInstance u_tdl1/u_tbuf10_0 77.24 10.04
+placeInstance u_tdl1/u_tbuf10_1 77.24 12.56
+placeInstance u_tdl1/u_clkbuf11_0 85.92 7.52
+placeInstance u_tdl1/u_clkbuf11_1 87.32 7.52
+placeInstance u_tdl1/u_tbuf11_0 83.96 10.04
+placeInstance u_tdl1/u_tbuf11_1 83.96 12.56
+placeInstance u_tdl1/u_clkbuf12_0 92.64 7.52
+placeInstance u_tdl1/u_clkbuf12_1 94.04 7.52
+placeInstance u_tdl1/u_tbuf12_0 90.68 10.04
+placeInstance u_tdl1/u_tbuf12_1 90.68 12.56
+placeInstance u_tdl1/u_clkbuf13_0 99.36 7.52
+placeInstance u_tdl1/u_clkbuf13_1 100.76 7.52
+placeInstance u_tdl1/u_tbuf13_0 97.4 10.04
+placeInstance u_tdl1/u_tbuf13_1 97.4 12.56
+placeInstance u_tdl1/u_clkbuf14_0 106.08 7.52
+placeInstance u_tdl1/u_clkbuf14_1 107.48 7.52
+placeInstance u_tdl1/u_tbuf14_0 104.12 10.04
+placeInstance u_tdl1/u_tbuf14_1 104.12 12.56
+placeInstance u_tdl1/u_clkbuf15_0 112.8 7.52
+placeInstance u_tdl1/u_clkbuf15_1 114.2 7.52
+placeInstance u_tdl1/u_tbuf15_0 110.84 10.04
+placeInstance u_tdl1/u_tbuf15_1 110.84 12.56
+placeInstance u_tdl2/u_clkbuf0_0 12.0 17.6
+placeInstance u_tdl2/u_clkbuf0_1 13.4 17.6
+placeInstance u_tdl2/u_tbuf0_0 10.04 20.12
+placeInstance u_tdl2/u_tbuf0_1 10.04 22.64
+placeInstance u_tdl2/u_clkbuf1_0 18.72 17.6
+placeInstance u_tdl2/u_clkbuf1_1 20.12 17.6
+placeInstance u_tdl2/u_tbuf1_0 16.76 20.12
+placeInstance u_tdl2/u_tbuf1_1 16.76 22.64
+placeInstance u_tdl2/u_clkbuf2_0 25.44 17.6
+placeInstance u_tdl2/u_clkbuf2_1 26.84 17.6
+placeInstance u_tdl2/u_tbuf2_0 23.48 20.12
+placeInstance u_tdl2/u_tbuf2_1 23.48 22.64
+placeInstance u_tdl2/u_clkbuf3_0 32.16 17.6
+placeInstance u_tdl2/u_clkbuf3_1 33.56 17.6
+placeInstance u_tdl2/u_tbuf3_0 30.2 20.12
+placeInstance u_tdl2/u_tbuf3_1 30.2 22.64
+placeInstance u_tdl2/u_clkbuf4_0 38.88 17.6
+placeInstance u_tdl2/u_clkbuf4_1 40.28 17.6
+placeInstance u_tdl2/u_tbuf4_0 36.92 20.12
+placeInstance u_tdl2/u_tbuf4_1 36.92 22.64
+placeInstance u_tdl2/u_clkbuf5_0 45.6 17.6
+placeInstance u_tdl2/u_clkbuf5_1 47.0 17.6
+placeInstance u_tdl2/u_tbuf5_0 43.64 20.12
+placeInstance u_tdl2/u_tbuf5_1 43.64 22.64
+placeInstance u_tdl2/u_clkbuf6_0 52.32 17.6
+placeInstance u_tdl2/u_clkbuf6_1 53.72 17.6
+placeInstance u_tdl2/u_tbuf6_0 50.36 20.12
+placeInstance u_tdl2/u_tbuf6_1 50.36 22.64
+placeInstance u_tdl2/u_clkbuf7_0 59.04 17.6
+placeInstance u_tdl2/u_clkbuf7_1 60.44 17.6
+placeInstance u_tdl2/u_tbuf7_0 57.08 20.12
+placeInstance u_tdl2/u_tbuf7_1 57.08 22.64
+placeInstance u_tdl2/u_clkbuf8_0 65.76 17.6
+placeInstance u_tdl2/u_clkbuf8_1 67.16 17.6
+placeInstance u_tdl2/u_tbuf8_0 63.8 20.12
+placeInstance u_tdl2/u_tbuf8_1 63.8 22.64
+placeInstance u_tdl2/u_clkbuf9_0 72.48 17.6
+placeInstance u_tdl2/u_clkbuf9_1 73.88 17.6
+placeInstance u_tdl2/u_tbuf9_0 70.52 20.12
+placeInstance u_tdl2/u_tbuf9_1 70.52 22.64
+placeInstance u_tdl2/u_clkbuf10_0 79.2 17.6
+placeInstance u_tdl2/u_clkbuf10_1 80.6 17.6
+placeInstance u_tdl2/u_tbuf10_0 77.24 20.12
+placeInstance u_tdl2/u_tbuf10_1 77.24 22.64
+placeInstance u_tdl2/u_clkbuf11_0 85.92 17.6
+placeInstance u_tdl2/u_clkbuf11_1 87.32 17.6
+placeInstance u_tdl2/u_tbuf11_0 83.96 20.12
+placeInstance u_tdl2/u_tbuf11_1 83.96 22.64
+placeInstance u_tdl2/u_clkbuf12_0 92.64 17.6
+placeInstance u_tdl2/u_clkbuf12_1 94.04 17.6
+placeInstance u_tdl2/u_tbuf12_0 90.68 20.12
+placeInstance u_tdl2/u_tbuf12_1 90.68 22.64
+placeInstance u_tdl2/u_clkbuf13_0 99.36 17.6
+placeInstance u_tdl2/u_clkbuf13_1 100.76 17.6
+placeInstance u_tdl2/u_tbuf13_0 97.4 20.12
+placeInstance u_tdl2/u_tbuf13_1 97.4 22.64
+placeInstance u_tdl2/u_clkbuf14_0 106.08 17.6
+placeInstance u_tdl2/u_clkbuf14_1 107.48 17.6
+placeInstance u_tdl2/u_tbuf14_0 104.12 20.12
+placeInstance u_tdl2/u_tbuf14_1 104.12 22.64
+placeInstance u_tdl2/u_clkbuf15_0 112.8 17.6
+placeInstance u_tdl2/u_clkbuf15_1 114.2 17.6
+placeInstance u_tdl2/u_tbuf15_0 110.84 20.12
+placeInstance u_tdl2/u_tbuf15_1 110.84 22.64
+placeInstance u_pd1/u_ff1 10.04 32.72
+placeInstance u_pd1/u_ff2 10.04 30.2
+placeInstance u_pd1/u3 17.6 32.72
+placeInstance u_pd1/u4 17.6 30.2
+placeInstance u_pd1/u5 19.0 32.72
+placeInstance u_pd1/u6 19.0 30.2
+placeInstance u_pd1/u7 19.0 35.24
+placeInstance u_pd1/u8 20.96 32.72
+placeInstance u_pd1/u9 20.96 30.2
+placeInstance u_pd1/u10 22.92 32.72
+placeInstance u_pd1/u11 22.92 30.2
+placeInstance u_pd1/u12 24.88 32.72
+placeInstance u_pd1/u13 24.88 30.2
+placeInstance u_pd2/u_ff1 29.08 32.72
+placeInstance u_pd2/u_ff2 29.08 30.2
+placeInstance u_pd2/u3 36.64 32.72
+placeInstance u_pd2/u4 36.64 30.2
+placeInstance u_pd2/u5 38.04 32.72
+placeInstance u_pd2/u6 38.04 30.2
+placeInstance u_pd2/u7 38.04 35.24
+placeInstance u_pd2/u8 40.0 32.72
+placeInstance u_pd2/u9 40.0 30.2
+placeInstance u_pd2/u10 41.96 32.72
+placeInstance u_pd2/u11 41.96 30.2
+placeInstance u_pd2/u12 43.92 32.72
+placeInstance u_pd2/u13 43.92 30.2
+setPlaceMode -prerouteAsObs {2 3}
+setPlaceMode -fp false
+place_design -noPrePlaceOpt
+addTieHiLo -cell {TIELO TIEHI} -prefix LTIE
+fit
+timeDesign -preCTS -pathReports -drvReports -slackReports -numPaths 50 -prefix gcd_preCTS -outDir timingReports
+setOptMode -fixCap true -fixTran true -fixFanoutLoad true
+optDesign -preCTS
+saveDesign ./DBS/gcd_placement.inn
+setNanoRouteMode -quiet -drouteStartIteration default
+setNanoRouteMode -quiet -routeTopRoutingLayer 8
+setNanoRouteMode -quiet -routeBottomRoutingLayer 1
+setNanoRouteMode -quiet -drouteEndIteration default
+setNanoRouteMode -quiet -routeWithTimingDriven true
+setNanoRouteMode -quiet -routeWithSiDriven false
+routeDesign -globalDetail
+saveDesign ./DBS/gcd_route.inn
+all_constraint_modes -active
+set_interactive_constraint_modes [all_constraint_modes -active]
+set_propagated_clock [get_clocks clk_in]
+set_interactive_constraint_modes {}
+setAnalysisMode -analysisType onChipVariation -cppr none -clockGatingCheck false -timeBorrowing true -useOutputPinCap true -enableMultipleDriveNet true -clkSrcPath true -warn true -usefulSkew false -log true
+setExtractRCMode -engine postRoute -effortLevel low -coupled false
+setDelayCalMode -SIAware false
+timeDesign -postRoute -pathReports -drvReports -slackReports -numPaths 50 -prefix gcd_postRoute -outDir timingReports
+setOptMode -fixCap true -fixTran true -fixFanoutLoad true
+setOptMode -setupTargetSlack 0.02
+optDesign -postRoute -setup
+timeDesign -postRoute -hold -pathReports -slackReports -numPaths 50 -prefix gcd_postRoute_hold -outDir timingReports
+setOptMode -fixCap true -fixTran true -fixFanoutLoad true
+optDesign -postRoute -hold
+timeDesign -postRoute -pathReports -drvReports -slackReports -numPaths 50 -prefix gcd_postRoute_final -outDir timingReports
+timeDesign -postRoute -hold -pathReports -slackReports -numPaths 50 -prefix gcd_postRoute_final_hold -outDir timingReports
+saveDesign ./DBS/gcd_postRoute.inn
+getFillerMode -quiet
+addFiller -cell FILL64 FILL32 FILL16 FILL8 FILL4 FILL2 FILL1 -prefix FILLER
+addMetalFill -layer {M1 M2 M3 M4 M5 M6 M7 M8} -nets {VSS VDD}
+saveDesign ./DBS/gcd_filler.inn
+verifyConnectivity -type all -error 1000 -warning 50
+verify_drc
+verifyProcessAntenna -reportfile gcd.antenna.rpt -error 1000
+saveDesign ./DBS/gcd_verified.inn
+setExtractRCMode -engine postRoute -effortLevel low -coupled false
+setDelayCalMode -reset -siMode
+setDelayCalMode -SIAware false
+extractRC
+timeDesign -postRoute -pathReports -drvReports -slackReports -numPaths 50 -prefix gcd_final_postRoute -outDir timingReports
+timeDesign -postRoute -hold -pathReports -slackReports -numPaths 50 -prefix gcd_final_postRoute_hold -outDir timingReports
+setAnalysisMode -analysisType bcwc
+write_sdf -max_view func_mode_max \
+          -typ_view func_mode_max \
+          -min_view func_mode_min \
+          -remashold \
+          -splitrecrem \
+          -recompute_delay_calc \
+          ./StreamOut/gcd_APR.sdf
+saveNetlist ./StreamOut/gcd_APR.v
+streamOut ./StreamOut/gcd.gds -mapFile /usr/cadtool/ee5216/CBDK_TSMC90GUTM_Arm_f1.0/CIC/SOCE/streamOut.map -libName DesignLib -structureName gcd -units 2000 -mode ALL
+write_lef_abstract ./StreamOut/gcd.lef
+saveDesign ./DBS/gcd_final.inn
+summaryReport -noHtml -outfile ./StreamOut/gcd_summary.rpt

@@ -1,0 +1,9 @@
+{"vcs1":{"timestamp_begin":1791704306.342471894, "rt":0.70, "ut":0.15, "st":0.09}}
+{"vcselab":{"timestamp_begin":1791704307.117447360, "rt":0.51, "ut":0.11, "st":0.06}}
+{"link":{"timestamp_begin":1791704307.711021402, "rt":0.17, "ut":0.06, "st":0.08}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1791704305.814867388}
+{"VCS_COMP_START_TIME": 1791704305.814867388}
+{"VCS_COMP_END_TIME": 1791704308.933025486}
+{"VCS_USER_OPTIONS": "-timescale=1ns/1ps -j4 -sverilog +v2k -full64 -Mupdate -Mdir=csrc_fsdb_2022.06 -R -debug_access+all +incdir+. +incdir+../00_TESTBED -f filelist.f -o simv -l vcs.log -P /usr/cad/synopsys/verdi/2022.06/share/PLI/VCS/LINUX64/novas.tab /usr/cad/synopsys/verdi/2022.06/share/PLI/VCS/LINUX64/pli.a -v ../00_TESTBED/RTL_CELL_MODEL.v +define+RTL +define+DLL_TEST +notimingchecks"}
+{"vcs1": {"peak_mem": 1062015}}
+{"stitch_vcselab": {"peak_mem": 1062064}}

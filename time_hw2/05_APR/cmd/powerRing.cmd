@@ -22,14 +22,21 @@ addRing -skip_via_on_wire_shape Noshape \
         -offset 0.1 \
         -extend_corner {tl lt tr bl br rb lb rt}
 
+# The loaded TSMC90 LEF names its usable signal metals M1 through M8.
+# Check this explicitly so a bad layer name stops the sourced flow instead
+# of being printed by sroute and then silently continuing to saveDesign.
+if {[llength [dbGet head.layers.name M8 -p]] == 0} {
+    error "Required routing layer M8 is not present in the loaded TSMC90 LEF"
+}
+
 sroute -connect {corePin} \
        -layerChangeRange {M1 M5} \
        -blockPinTarget {nearestTarget} \
        -corePinTarget {firstAfterRowEnd} \
        -allowJogging 1 \
-       -crossoverViaLayerRange {M1 M9} \
+       -crossoverViaLayerRange {M1 M8} \
        -nets {VDD VSS} \
        -allowLayerChange 1 \
-       -targetViaLayerRange {M1 M9}
+       -targetViaLayerRange {M1 M8}
 
 saveDesign ./DBS/gcd_powerplan.inn

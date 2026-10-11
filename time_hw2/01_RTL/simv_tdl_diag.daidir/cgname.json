@@ -1,0 +1,50 @@
+{
+    "std": [
+        "std",
+        "reYIK",
+        "module",
+        1
+    ],
+    "gcd": [
+        "gcd",
+        "Vu6eY",
+        "module",
+        2
+    ],
+    "pd": [
+        "pd",
+        "qBL9Y",
+        "module",
+        3
+    ],
+    "tdl": [
+        "tdl",
+        "QvYn2",
+        "module",
+        4
+    ],
+    "controller": [
+        "controller",
+        "KBY0m",
+        "module",
+        5
+    ],
+    "TESTBED": [
+        "TESTBED",
+        "TAUdR",
+        "module",
+        6
+    ],
+    "...MASTER...": [
+        "SIM",
+        "amcQw",
+        "module",
+        7
+    ],
+    "udp_dff": [
+        "udp_dff",
+        "exIG1",
+        "udp",
+        8
+    ]
+}

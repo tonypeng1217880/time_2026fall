@@ -15,8 +15,6 @@ module gcd (
     wire lead_lag1, lead_lag2;
     wire locked1, locked2;
     wire measure1, measure2;
-    wire pd1_reset_n;
-    reg  pd2_reset_n;
 
     assign ref_half = ~clk_in;
     assign locked = locked1 & locked2;
@@ -24,25 +22,14 @@ module gcd (
     tdl u_tdl1 (.tdl_in(clk_in), .tdl_code(code1), .tdl_out(clk_o1));
     tdl u_tdl2 (.tdl_in(clk_in), .tdl_code(code2), .tdl_out(clk_o2));
 
-    // Re-arm PD1 just after a rising edge: the intended reference is the
-    // following falling edge (about T/2). This does not gate either TDL.
-    assign pd1_reset_n = rst_n & measure1;
-
-    // Re-arm PD2 just after a falling edge: compare the next feedback edge
-    // with the next input rising edge. In the acquisition scan, delays below
-    // T/2 report lag; delays between T/2 and T report lead. Ignore the first
-    // lag region, then find the first lead-to-lag crossing near T.
-    always @(negedge clk_in or negedge rst_n) begin
-        if (!rst_n)
-            pd2_reset_n <= 1'b0;
-        else
-            pd2_reset_n <= measure2;
-    end
-
+    // Each phase detector is initialized once by the global reset and then
+    // continuously self-clears through its internal u5/u7 reset loop.  Do not
+    // gate an asynchronous DFF reset with the controller measurement window:
+    // its periodic deassertion can violate recovery/removal at gate level.
     pd u_pd1 (.ref_clk(ref_half), .fb_clk(clk_o1),
-              .rst_n(pd1_reset_n), .lead_lag(lead_lag1));
+              .rst_n(rst_n), .lead_lag(lead_lag1));
     pd u_pd2 (.ref_clk(clk_in), .fb_clk(clk_o2),
-              .rst_n(pd2_reset_n), .lead_lag(lead_lag2));
+              .rst_n(rst_n), .lead_lag(lead_lag2));
 
     controller u_ctl1 (
         .clk_in(clk_in), .rst_n(rst_n), .enable(1'b1),
@@ -63,9 +50,7 @@ module pd (
     output lead_lag
 );
     wire up;
-    wire up_n;
     wire down;
-    wire down_n;
 
     wire clk_up;
     wire clk_down;
@@ -77,11 +62,13 @@ module pd (
     wire u10_out;
     wire u11_out;
     wire dummy_out;
-    DFFRX2 u_ff1 (.D (1'b1), .CK(fb_clk), .RN(ff_reset_n), .Q (up), .QN(up_n));
+    // The TA physical-design flow uses the high-speed, Q-only reset DFF for
+    // the two detector arms.  QN is not used by this PD.
+    DFFRHQX1 u_ff1 (.D(1'b1), .CK(fb_clk),  .RN(ff_reset_n), .Q(up));
     CLKBUFX4 u3 (.A(up), .Y(clk_up));
     NAND2X4 u5 (.A(clk_up), .B(clk_down), .Y(u5_out));
 
-    DFFRX2 u_ff2 (.D (1'b1), .CK(ref_clk), .RN(ff_reset_n), .Q (down), .QN(down_n));
+    DFFRHQX1 u_ff2 (.D(1'b1), .CK(ref_clk), .RN(ff_reset_n), .Q(down));
     CLKBUFX4 u4 (.A(down), .Y(clk_down));
     NAND2X4 u6 (.A(clk_up), .B(clk_down), .Y(u6_out));
 
@@ -204,69 +191,78 @@ module tdl (
     TBUFX16  u_tbuf15_0   (.A(coarse_node[16]), .OE(1'b1), .Y(fine1_node[15]));
     TBUFX16  u_tbuf15_1   (.A(fine1_node[15]),  .OE(1'b1), .Y(fine2_node[15]));
 
-    reg [4:0] stage;
-    reg [1:0] tbuf_num;
-
+    // One-hot output selection.  Every candidate tap passes through one
+    // identical TBUF selector, avoiding the large and path-dependent 48:1
+    // mux that a variable array index would synthesize.
+    reg selected_tap;
     always @(*) begin
-        stage    = 5'd0;
-        tbuf_num = 2'd0;
-
         case (tdl_code)
-            6'd0 : begin stage = 5'd0;  tbuf_num = 2'd0; end //  60.0 ps
-            6'd1 : begin stage = 5'd0;  tbuf_num = 2'd1; end // 102.8 ps
-            6'd2 : begin stage = 5'd1;  tbuf_num = 2'd0; end // 120.0 ps
-            6'd3 : begin stage = 5'd0;  tbuf_num = 2'd2; end // 145.6 ps
-            6'd4 : begin stage = 5'd1;  tbuf_num = 2'd1; end // 162.8 ps
-            6'd5 : begin stage = 5'd2;  tbuf_num = 2'd0; end // 180.0 ps
-            6'd6 : begin stage = 5'd1;  tbuf_num = 2'd2; end // 205.6 ps
-            6'd7 : begin stage = 5'd2;  tbuf_num = 2'd1; end // 222.8 ps
-            6'd8 : begin stage = 5'd3;  tbuf_num = 2'd0; end // 240.0 ps
-            6'd9 : begin stage = 5'd2;  tbuf_num = 2'd2; end // 265.6 ps
-            6'd10: begin stage = 5'd3;  tbuf_num = 2'd1; end // 282.8 ps
-            6'd11: begin stage = 5'd4;  tbuf_num = 2'd0; end // 300.0 ps
-            6'd12: begin stage = 5'd3;  tbuf_num = 2'd2; end // 325.6 ps
-            6'd13: begin stage = 5'd4;  tbuf_num = 2'd1; end // 342.8 ps
-            6'd14: begin stage = 5'd5;  tbuf_num = 2'd0; end // 360.0 ps
-            6'd15: begin stage = 5'd4;  tbuf_num = 2'd2; end // 385.6 ps
-            6'd16: begin stage = 5'd5;  tbuf_num = 2'd1; end // 402.8 ps
-            6'd17: begin stage = 5'd6;  tbuf_num = 2'd0; end // 420.0 ps
-            6'd18: begin stage = 5'd5;  tbuf_num = 2'd2; end // 445.6 ps
-            6'd19: begin stage = 5'd6;  tbuf_num = 2'd1; end // 462.8 ps
-            6'd20: begin stage = 5'd7;  tbuf_num = 2'd0; end // 480.0 ps
-            6'd21: begin stage = 5'd6;  tbuf_num = 2'd2; end // 505.6 ps
-            6'd22: begin stage = 5'd7;  tbuf_num = 2'd1; end // 522.8 ps
-            6'd23: begin stage = 5'd8;  tbuf_num = 2'd0; end // 540.0 ps
-            6'd24: begin stage = 5'd7;  tbuf_num = 2'd2; end // 565.6 ps
-            6'd25: begin stage = 5'd8;  tbuf_num = 2'd1; end // 582.8 ps
-            6'd26: begin stage = 5'd9;  tbuf_num = 2'd0; end // 600.0 ps
-            6'd27: begin stage = 5'd8;  tbuf_num = 2'd2; end // 625.6 ps
-            6'd28: begin stage = 5'd9;  tbuf_num = 2'd1; end // 642.8 ps
-            6'd29: begin stage = 5'd10; tbuf_num = 2'd0; end // 660.0 ps
-            6'd30: begin stage = 5'd9;  tbuf_num = 2'd2; end // 685.6 ps
-            6'd31: begin stage = 5'd10; tbuf_num = 2'd1; end // 702.8 ps
-            6'd32: begin stage = 5'd11; tbuf_num = 2'd0; end // 720.0 ps
-            6'd33: begin stage = 5'd10; tbuf_num = 2'd2; end // 745.6 ps
-            6'd34: begin stage = 5'd11; tbuf_num = 2'd1; end // 762.8 ps
-            6'd35: begin stage = 5'd12; tbuf_num = 2'd0; end // 780.0 ps
-            6'd36: begin stage = 5'd11; tbuf_num = 2'd2; end // 805.6 ps
-            6'd37: begin stage = 5'd12; tbuf_num = 2'd1; end // 822.8 ps
-            6'd38: begin stage = 5'd13; tbuf_num = 2'd0; end // 840.0 ps
-            6'd39: begin stage = 5'd12; tbuf_num = 2'd2; end // 865.6 ps
-            6'd40: begin stage = 5'd13; tbuf_num = 2'd1; end // 882.8 ps
-            6'd41: begin stage = 5'd14; tbuf_num = 2'd0; end // 900.0 ps
-            6'd42: begin stage = 5'd13; tbuf_num = 2'd2; end // 925.6 ps
-            6'd43: begin stage = 5'd14; tbuf_num = 2'd1; end // 942.8 ps
-            6'd44: begin stage = 5'd15; tbuf_num = 2'd0; end // 960.0 ps
-            6'd45: begin stage = 5'd14; tbuf_num = 2'd2; end // 985.6 ps
-            6'd46: begin stage = 5'd15; tbuf_num = 2'd1; end // 1002.8 ps
-            6'd47: begin stage = 5'd15; tbuf_num = 2'd2; end // 1045.6 ps
-            default: begin stage = 5'd0; tbuf_num = 2'd0; end
+            // The synthesized mux is itself the common output delay.  Start
+            // with the undelayed input so the slow-corner minimum remains
+            // below 0.5 ns, then retain the sorted coarse/fine progression.
+            6'd0 : selected_tap = coarse_node[0];
+            6'd1 : selected_tap = coarse_mid[0];
+            6'd2 : selected_tap = coarse_node[1];
+            6'd3 : selected_tap = fine1_node[0];
+            6'd4 : selected_tap = coarse_node[2];
+            6'd5 : selected_tap = fine2_node[0];
+            6'd6 : selected_tap = fine1_node[1];
+            6'd7 : selected_tap = coarse_node[3];
+            6'd8 : selected_tap = fine2_node[1];
+            6'd9 : selected_tap = fine1_node[2];
+            6'd10: selected_tap = coarse_node[4];
+            6'd11: selected_tap = fine2_node[2];
+            6'd12: selected_tap = fine1_node[3];
+            6'd13: selected_tap = coarse_node[5];
+            6'd14: selected_tap = fine2_node[3];
+            6'd15: selected_tap = fine1_node[4];
+            6'd16: selected_tap = coarse_node[6];
+            6'd17: selected_tap = fine2_node[4];
+            6'd18: selected_tap = fine1_node[5];
+            6'd19: selected_tap = coarse_node[7];
+            6'd20: selected_tap = fine2_node[5];
+            6'd21: selected_tap = fine1_node[6];
+            6'd22: selected_tap = coarse_node[8];
+            6'd23: selected_tap = fine2_node[6];
+            6'd24: selected_tap = fine1_node[7];
+            6'd25: selected_tap = coarse_node[9];
+            6'd26: selected_tap = fine2_node[7];
+            6'd27: selected_tap = fine1_node[8];
+            6'd28: selected_tap = coarse_node[10];
+            6'd29: selected_tap = fine2_node[8];
+            6'd30: selected_tap = fine1_node[9];
+            6'd31: selected_tap = coarse_node[11];
+            6'd32: selected_tap = fine2_node[9];
+            6'd33: selected_tap = fine1_node[10];
+            6'd34: selected_tap = coarse_node[12];
+            6'd35: selected_tap = fine2_node[10];
+            6'd36: selected_tap = fine1_node[11];
+            6'd37: selected_tap = coarse_node[13];
+            6'd38: selected_tap = fine2_node[11];
+            6'd39: selected_tap = fine1_node[12];
+            6'd40: selected_tap = coarse_node[14];
+            6'd41: selected_tap = fine2_node[12];
+            6'd42: selected_tap = fine1_node[13];
+            6'd43: selected_tap = coarse_node[15];
+            6'd44: selected_tap = fine2_node[13];
+            6'd45: selected_tap = fine1_node[14];
+            6'd46: selected_tap = coarse_node[16];
+            6'd47: selected_tap = fine1_node[15];
+            default: selected_tap = coarse_node[0];
         endcase
     end
 
-    assign tdl_out = (tbuf_num == 2'd0) ? coarse_node[stage + 1] :
-                     (tbuf_num == 2'd1) ? fine1_node[stage] :
-                                          fine2_node[stage];
+    // The synthesized mux already contributes a common delay.  Drive the
+    // output directly so code 0 remains below the 0.5 ns target.  Unlike the
+    // former 48-TBUF bus, this has exactly one logic driver and cannot resolve
+    // to X because two tri-state cells overlap during a code transition.
+`ifdef RTL
+    // The synthesized mux has a real nonzero delay.  Add 1 ps only to the
+    // functional RTL model so code 0 is not an exact-time tie at PD2.
+    assign #0.001 tdl_out = selected_tap;
+`else
+    assign tdl_out = selected_tap;
+`endif
 endmodule
 
 // ACQUIRE_FORWARD skips PD2's initial lag region below half a period.
@@ -287,6 +283,8 @@ module controller #(
     reg [2:0] wait_count;
     reg       prev_lead_lag;
     reg       prev_valid;
+    reg       forward_armed;
+    reg       forward_high_seen;
 
     reg       pd_meta;
     reg       pd_sync;
@@ -295,15 +293,22 @@ module controller #(
     // 將 PD 的輸出送進 controller 的時脈域。
     // 這不會自動判斷結果是否屬於新的控制碼，
     // 所以下面仍然需要等待。
-    always @(posedge clk_in or negedge rst_n) begin
+    // Capture the asynchronous PD result on the falling edge.  The second
+    // stage then receives about half a cycle of setup margin before the
+    // controller's rising-edge clock domain samples it.
+    always @(negedge clk_in or negedge rst_n) begin
         if (!rst_n) begin
             pd_meta <= 1'b0;
-            pd_sync <= 1'b0;
         end
-        else begin
+        else
             pd_meta <= lead_lag;
+    end
+
+    always @(posedge clk_in or negedge rst_n) begin
+        if (!rst_n)
+            pd_sync <= 1'b0;
+        else
             pd_sync <= pd_meta;
-        end
     end
 
     // 範例：每隔 8 個 clk_in 週期判斷一次
@@ -319,10 +324,14 @@ module controller #(
             wait_count    <= 3'd0;
             prev_lead_lag <= 1'b0;
             prev_valid    <= 1'b0;
+            forward_armed <= 1'b0;
+            forward_high_seen <= 1'b0;
         end
         else if (!enable) begin
             wait_count <= 3'd0;
             prev_valid <= 1'b0;
+            forward_armed <= 1'b0;
+            forward_high_seen <= 1'b0;
         end
         else if (!locked) begin
             if (!update_en) begin
@@ -331,34 +340,54 @@ module controller #(
             else begin
                 wait_count <= 3'd0;
 
-                // 上次確實移動過一格，且新結果方向反轉
-                if (ACQUIRE_FORWARD && !prev_valid &&
-                    (pd_sync == 1'b0)) begin
-                    // Do not interpret the short-delay lag region as a
-                    // request to decrement an already-minimum code.
-                    if (tdl_code < 6'd47)
+                if (ACQUIRE_FORWARD) begin
+                    // A full-period search can see a short, false transition
+                    // near the half-period point.  Arm locking only after two
+                    // consecutive high measurements; then the first low is
+                    // the far (one-period) crossing that we want.
+                    if (!forward_armed) begin
+                        if (pd_sync == 1'b1) begin
+                            if (forward_high_seen)
+                                forward_armed <= 1'b1;
+                            else
+                                forward_high_seen <= 1'b1;
+                        end
+                        else begin
+                            forward_high_seen <= 1'b0;
+                        end
+
+                        if (tdl_code < 6'd47)
+                            tdl_code <= tdl_code + 6'd1;
+                    end
+                    else if (pd_sync == 1'b0) begin
+                        locked <= 1'b1;
+                    end
+                    else if (tdl_code < 6'd47) begin
                         tdl_code <= tdl_code + 6'd1;
-                end
-                else if (prev_valid &&
-                    (pd_sync != prev_lead_lag)) begin
-                    locked <= 1'b1;
-                    // 不改 tdl_code，保留目前這一格
-                end
-                else if ((pd_sync == 1'b1) &&
-                         (tdl_code < 6'd47)) begin
-                    tdl_code      <= tdl_code + 6'd1;
-                    prev_lead_lag <= 1'b1;
-                    prev_valid    <= 1'b1;
-                end
-                else if ((pd_sync == 1'b0) &&
-                         (tdl_code > 6'd0)) begin
-                    tdl_code      <= tdl_code - 6'd1;
-                    prev_lead_lag <= 1'b0;
-                    prev_valid    <= 1'b1;
+                    end
                 end
                 else begin
-                    // 無法繼續移動，不把碰到邊界當成鎖定
-                    prev_valid <= 1'b0;
+                    // Half-period search: lock at the first direction
+                    // reversal after a real one-code movement.
+                    if (prev_valid && (pd_sync != prev_lead_lag)) begin
+                        locked <= 1'b1;
+                    end
+                    else if ((pd_sync == 1'b1) &&
+                             (tdl_code < 6'd47)) begin
+                        tdl_code      <= tdl_code + 6'd1;
+                        prev_lead_lag <= 1'b1;
+                        prev_valid    <= 1'b1;
+                    end
+                    else if ((pd_sync == 1'b0) &&
+                             (tdl_code > 6'd0)) begin
+                        tdl_code      <= tdl_code - 6'd1;
+                        prev_lead_lag <= 1'b0;
+                        prev_valid    <= 1'b1;
+                    end
+                    else begin
+                        // Reaching a boundary is not itself proof of lock.
+                        prev_valid <= 1'b0;
+                    end
                 end
             end
         end

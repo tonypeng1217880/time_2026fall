@@ -28,16 +28,20 @@ uniquify
 
 # TSMC90 timing corners. Library names come from .synopsys_dc.setup.
 set_wire_load_mode top
-set_operating_conditions -min_library fast -min fast \
+set_operating_conditions -analysis_type bc_wc \
+                         -min_library fast -min fast \
                          -max_library slow -max slow
 
 # Clock constraints.
 # Homework #2 uses a 1 GHz input clock: T = 1 ns.
 create_clock -name clk_in -period $CYCLE [get_ports clk_in]
-set_ideal_network [get_ports clk_in]
+# Keep the external source ideal without propagating the ideal attribute
+# through the cell-based TDL.  Propagation would make DC write zero IOPATH
+# delays for every explicitly instantiated CLKBUF/TBUF in the SDF.
+set_ideal_network -no_propagate [get_ports clk_in]
 set_dont_touch_network [get_clocks clk_in]
 set_fix_hold [get_clocks clk_in]
-set_ideal_network [get_ports rst_n]
+set_ideal_network -no_propagate [get_ports rst_n]
 set_dont_touch_network [get_ports rst_n]
 
 # The reset is asynchronous. The DLL outputs are generated clocks, not
@@ -48,13 +52,13 @@ set_false_path -from [get_ports rst_n]
 # Keep this collection for any future non-clock/non-reset control inputs.
 set DATA_INPUTS [remove_from_collection [all_inputs] [get_ports {clk_in rst_n}]]
 if {[sizeof_collection $DATA_INPUTS] > 0} {
+    set_drive 1 $DATA_INPUTS
     set_input_transition 0.1 $DATA_INPUTS
     set_input_delay -max 0.5 -clock clk_in $DATA_INPUTS
     set_input_delay -min 0.0 -clock clk_in $DATA_INPUTS
 }
 
 # The TSMC90 kit supplied for TIME contains only the core library.
-set_drive 1 $DATA_INPUTS
 set_drive 0 [get_ports {clk_in rst_n}]
 set_load [load_of slow/CLKBUFX20/A] [all_outputs]
 
@@ -91,7 +95,7 @@ foreach block {u_pd1 u_pd2} {
 foreach block {u_tdl1 u_tdl2} {
     set delay_cells [get_cells [list ${block}/u_clkbuf* ${block}/u_tbuf*]]
     if {[sizeof_collection $delay_cells] != 64} {
-        error "Expected 32 CLKBUFs and 32 TBUFs in $block"
+        error "Expected 32 CLKBUFs and 32 fine TBUFs in $block"
     }
     set_dont_touch $delay_cells true
     set_dont_touch [get_nets [list ${block}/coarse_node* \

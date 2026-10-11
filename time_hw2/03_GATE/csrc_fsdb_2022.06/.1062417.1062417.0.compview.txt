@@ -1,0 +1,9 @@
+{"vcs1":{"timestamp_begin":1791704341.600283752, "rt":0.82, "ut":0.26, "st":0.14}}
+{"vcselab":{"timestamp_begin":1791704342.487576237, "rt":0.52, "ut":0.10, "st":0.03}}
+{"link":{"timestamp_begin":1791704343.096057937, "rt":0.27, "ut":0.11, "st":0.14}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1791704341.018610885}
+{"VCS_COMP_START_TIME": 1791704341.018610885}
+{"VCS_COMP_END_TIME": 1791704344.391875592}
+{"VCS_USER_OPTIONS": "-timescale=1ns/1ps -j4 -sverilog +v2k -full64 -Mupdate -Mdir=csrc_fsdb_2022.06 -R -debug_access+all +incdir+. +incdir+../00_TESTBED -f filelist.f -o simv -l vcs.log -P /usr/cad/synopsys/verdi/2022.06/share/PLI/VCS/LINUX64/novas.tab /usr/cad/synopsys/verdi/2022.06/share/PLI/VCS/LINUX64/pli.a -v /usr/cadtool/ee5216/CBDK_TSMC90GUTM_Arm_f1.0/CIC/Verilog/tsmc090.v +define+GATE +define+DLL_TEST +maxdelays +neg_tchk +nowarnNTCDSN"}
+{"vcs1": {"peak_mem": 1063183}}
+{"stitch_vcselab": {"peak_mem": 1063233}}

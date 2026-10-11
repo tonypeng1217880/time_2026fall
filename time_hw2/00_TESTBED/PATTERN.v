@@ -10,6 +10,25 @@
 //   tdl (tdl_in, tdl_code, tdl_out)
 //   gcd (clk_in, rst_n, clk_o1, clk_o2, locked)
 
+// Terminal summary: green PASS, red FAIL. Add runtime +NO_COLOR for plain logs.
+// Keep text labels even when a terminal does not support ANSI colors.
+`define HW2_RESULT_BANNER(OK, LABEL, DETAIL) \
+    begin \
+        if (!$test$plusargs("NO_COLOR")) begin \
+            if (OK) $write("\033[1;32m"); \
+            else    $write("\033[1;31m"); \
+        end \
+        $display(""); \
+        $display("================================================================"); \
+        if (OK) $display("    PASS  |  %0s", LABEL); \
+        else    $display("    FAIL  |  %0s", LABEL); \
+        $display("----------------------------------------------------------------"); \
+        $display("    %0s", DETAIL); \
+        $display("================================================================"); \
+        if (!$test$plusargs("NO_COLOR")) $write("\033[0m"); \
+        $display(""); \
+    end
+
 `ifndef TDL_CODE_WIDTH
     `define TDL_CODE_WIDTH 6
 `endif
@@ -123,10 +142,14 @@ initial begin
     run_pd_case( 30.0, 1'b0);
     run_pd_case( 40.0, 1'b0);
 
-    if (pd_failures != 0)
+    if (pd_failures != 0) begin
+        `HW2_RESULT_BANNER(1'b0, "PD TEST", "One or more directional comparisons failed.")
         $fatal(1, "PD TEST FAILED: %0d passed, %0d failed", pd_passes, pd_failures);
-    else
+    end
+    else begin
         $display("PD TEST PASSED: %0d directional cases plus 1 reported tie", pd_passes);
+        `HW2_RESULT_BANNER(1'b1, "PD TEST", "Directional checks passed with loaded model; tie reported.")
+    end
 
     #1.0;
     $finish;
@@ -243,10 +266,14 @@ initial begin
         end
     end
 
-    if (tdl_failures != 0)
+    if (tdl_failures != 0) begin
+        `HW2_RESULT_BANNER(1'b0, "TDL TEST", "Code sweep, output edge or monotonicity check failed.")
         $fatal(1, "TDL TEST FAILED: %0d failure(s)", tdl_failures);
-    else
+    end
+    else begin
         $display("TDL TEST PASSED");
+        `HW2_RESULT_BANNER(1'b1, "TDL TEST", "Code sweep passed; measured delays depend on library/SDF.")
+    end
 
     #1.0;
     $finish;
@@ -270,14 +297,21 @@ input      clk_o1;
 input      clk_o2;
 input      locked;
 
+// Explicitly opt in for diagnosis with the unannotated 1 ns-per-cell library.
+// This mode is NOT the homework's 1 GHz timing verification.
+`ifdef DLL_UNIT_DIAG
+localparam real DLL_CYCLE = 20.0;
+localparam real PHASE_TOL = 1.1; // one 1 ns model step, plus margin
+`else
 localparam real DLL_CYCLE = 1.0;
-localparam real O1_DELAY = 0.5;
-localparam real O2_DELAY = 1.0;
 // Engineering acceptance threshold, NOT a tolerance specified by the TA.
 `ifndef DLL_PHASE_TOL_NS
     `define DLL_PHASE_TOL_NS 0.03
 `endif
 localparam real PHASE_TOL = `DLL_PHASE_TOL_NS;
+`endif
+localparam real O1_DELAY = DLL_CYCLE / 2.0;
+localparam real O2_DELAY = DLL_CYCLE;
 localparam integer MAX_LOCK_CYCLES = 2000;
 localparam integer VERIFY_CYCLES = 32;
 
@@ -293,6 +327,31 @@ integer lock_wait_cycles;
 integer clock_run;
 real last_o1_edge;
 real last_o2_edge;
+real observed_o1_edge;
+real observed_o2_edge;
+
+// Search trace. RTL may inspect controller internals; GATE uses only the
+// top-level inter-block nets whose names are preserved in the synthesized
+// hierarchical netlist.
+`ifdef RTL
+reg [5:0] dbg_code1;
+reg [5:0] dbg_code2;
+reg       dbg_locked1;
+reg       dbg_locked2;
+integer   dbg_initialized;
+`elsif GATE
+reg [5:0] dbg_code1;
+reg [5:0] dbg_code2;
+reg       dbg_locked1;
+reg       dbg_locked2;
+integer   dbg_initialized;
+`elsif POST
+reg [5:0] dbg_code1;
+reg [5:0] dbg_code2;
+reg       dbg_locked1;
+reg       dbg_locked2;
+integer   dbg_initialized;
+`endif
 
 always #(DLL_CYCLE/2.0)
     if (clock_run) clk_in = ~clk_in;
@@ -310,6 +369,30 @@ begin
     abs_real = (value < 0.0) ? -value : value;
 end
 endfunction
+
+function real observed_phase;
+    input real output_edge;
+    real value;
+begin
+    if ((output_edge < 0.0) || (ref_edge_count < 1)) begin
+        observed_phase = -1.0;
+    end
+    else begin
+        value = output_edge - ref_edge_0;
+        while (value < 0.0)
+            value = value + DLL_CYCLE;
+        while (value >= DLL_CYCLE)
+            value = value - DLL_CYCLE;
+        observed_phase = value;
+    end
+end
+endfunction
+
+always @(posedge clk_o1)
+    observed_o1_edge = $realtime;
+
+always @(posedge clk_o2)
+    observed_o2_edge = $realtime;
 
 // Compare the latest three input edges. This handles clk_o2, whose 360-degree
 // edge can occur at the same timestamp as the next clk_in edge.
@@ -386,17 +469,28 @@ always @(posedge clk_o2)
 
 task automatic reset_task;
 begin
+    // Complete reset while the source clock is stopped.  APR adds different
+    // insertion delays to RN and CK, so releasing reset while a 1 GHz clock
+    // is already running can violate recovery even when the RTL timestamp
+    // appears clear of an edge.  Search operation remains fully continuous
+    // after startup.
+    clock_run = 0;
+    clk_in = 1'b0;
     rst_n = 1'b1;
     #0.1;
     rst_n = 1'b0;
-    repeat (3) @(negedge clk_in);
+    #(10.0 * DLL_CYCLE);
     rst_n = 1'b1;
-    repeat (2) @(negedge clk_in);
+    // The unannotated library recovery placeholder is 1 ns.  Leave more than
+    // one full 1 GHz cycle before the first source-clock edge.
+    #(1.25 * DLL_CYCLE);
+    clock_run = 1;
+    repeat (6) @(negedge clk_in);
 end
 endtask
 
 // After locking only: pause/drain the input and launch an isolated edge.
-// This verifies physical 0.5/1.0 ns delay, which periodic phase alone cannot
+// This verifies physical T/2 and T delays, which periodic phase alone cannot
 // distinguish from a zero-cycle or extra-cycle lock. No reset is asserted;
 // both frozen tuning codes must be retained while the input clock is paused.
 task verify_absolute_delay;
@@ -409,9 +503,11 @@ begin
     @(negedge clk_in);
     #0.001;
     clock_run = 0;
-    #5.0;
-    if ((clk_o1 !== 1'b0) || (clk_o2 !== 1'b0))
+    #(5.0 * DLL_CYCLE);
+    if ((clk_o1 !== 1'b0) || (clk_o2 !== 1'b0)) begin
+        `HW2_RESULT_BANNER(1'b0, "DLL TEST", "Output did not settle low during absolute-delay check.")
         $fatal(1, "DLL outputs did not drain to zero after clock pause");
+    end
 
     edges1 = 0;
     edges2 = 0;
@@ -438,7 +534,7 @@ begin
             clk_in = 1'b1;
             #(DLL_CYCLE/2.0);
             clk_in = 1'b0;
-            #4.0;
+            #(4.0 * DLL_CYCLE);
         end
     join_any
     disable ABSOLUTE_DELAY_CHECK;
@@ -446,11 +542,15 @@ begin
     $display("DLL absolute delay: o1=%0.3f ns, o2=%0.3f ns", measured1, measured2);
     if ((edges1 != 1) || (edges2 != 1) ||
         (abs_real(measured1 - O1_DELAY) > PHASE_TOL) ||
-        (abs_real(measured2 - O2_DELAY) > PHASE_TOL))
+        (abs_real(measured2 - O2_DELAY) > PHASE_TOL)) begin
+        `HW2_RESULT_BANNER(1'b0, "DLL TEST", "Wrong physical delay or unexpected output edge count.")
         $fatal(1, "DLL absolute delay check failed (edges1=%0d, edges2=%0d)",
                edges1, edges2);
-    if (locked !== 1'b1)
+    end
+    if (locked !== 1'b1) begin
+        `HW2_RESULT_BANNER(1'b0, "DLL TEST", "Lock was not retained while the input clock was paused.")
         $fatal(1, "DLL lost its frozen lock while the clock was paused");
+    end
 
     clock_run = 1;
     repeat (4) @(negedge clk_in);
@@ -459,6 +559,9 @@ endtask
 
 initial begin
     clk_in = 1'b0;
+    `ifdef DLL_UNIT_DIAG
+    $display("DIAGNOSTIC ONLY: T=20 ns, targets=10/20 ns, tolerance=1.1 ns; NOT a 1 GHz result");
+    `endif
     clock_run = 1;
     rst_n = 1'b1;
     ref_edge_0 = 0.0;
@@ -471,6 +574,27 @@ initial begin
     o2_checks = 0;
     last_o1_edge = -1.0;
     last_o2_edge = -1.0;
+    observed_o1_edge = -1.0;
+    observed_o2_edge = -1.0;
+    `ifdef RTL
+    dbg_code1 = 6'bxxxxxx;
+    dbg_code2 = 6'bxxxxxx;
+    dbg_locked1 = 1'bx;
+    dbg_locked2 = 1'bx;
+    dbg_initialized = 0;
+    `elsif GATE
+    dbg_code1 = 6'bxxxxxx;
+    dbg_code2 = 6'bxxxxxx;
+    dbg_locked1 = 1'bx;
+    dbg_locked2 = 1'bx;
+    dbg_initialized = 0;
+    `elsif POST
+    dbg_code1 = 6'bxxxxxx;
+    dbg_code2 = 6'bxxxxxx;
+    dbg_locked1 = 1'bx;
+    dbg_locked2 = 1'bx;
+    dbg_initialized = 0;
+    `endif
 
     reset_task;
 
@@ -478,9 +602,110 @@ initial begin
     while ((lock_wait_cycles < MAX_LOCK_CYCLES) && (locked !== 1'b1)) begin
         @(negedge clk_in);
         lock_wait_cycles = lock_wait_cycles + 1;
+        `ifdef RTL
+        if (!dbg_initialized ||
+            (TESTBED.u_gcd.code1 !== dbg_code1) ||
+            (TESTBED.u_gcd.code2 !== dbg_code2) ||
+            (TESTBED.u_gcd.locked1 !== dbg_locked1) ||
+            (TESTBED.u_gcd.locked2 !== dbg_locked2) ||
+            ((lock_wait_cycles % 128) == 0)) begin
+            $display("DLL_SEARCH t=%0.3f ns cycle=%0d | L1=%b code1=%0d lead1=%b measure1=%b wait1=%0d sync1=%b | L2=%b code2=%0d lead2=%b measure2=%b wait2=%0d sync2=%b",
+                     $realtime, lock_wait_cycles,
+                     TESTBED.u_gcd.locked1, TESTBED.u_gcd.code1,
+                     TESTBED.u_gcd.lead_lag1, TESTBED.u_gcd.measure1,
+                     TESTBED.u_gcd.u_ctl1.wait_count,
+                     TESTBED.u_gcd.u_ctl1.pd_sync,
+                     TESTBED.u_gcd.locked2, TESTBED.u_gcd.code2,
+                     TESTBED.u_gcd.lead_lag2, TESTBED.u_gcd.measure2,
+                     TESTBED.u_gcd.u_ctl2.wait_count,
+                     TESTBED.u_gcd.u_ctl2.pd_sync);
+            dbg_code1 = TESTBED.u_gcd.code1;
+            dbg_code2 = TESTBED.u_gcd.code2;
+            dbg_locked1 = TESTBED.u_gcd.locked1;
+            dbg_locked2 = TESTBED.u_gcd.locked2;
+            dbg_initialized = 1;
+        end
+        `elsif GATE
+        if (!dbg_initialized ||
+            (TESTBED.u_gcd.code1 !== dbg_code1) ||
+            (TESTBED.u_gcd.code2 !== dbg_code2) ||
+            (TESTBED.u_gcd.locked1 !== dbg_locked1) ||
+            (TESTBED.u_gcd.locked2 !== dbg_locked2) ||
+            ((lock_wait_cycles % 128) == 0)) begin
+            $display("GATE_SEARCH t=%0.3f ns cycle=%0d | L1=%b code1=%b lead1=%b phase1=%0.3f | L2=%b code2=%b lead2=%b phase2=%0.3f | out1=%b out2=%b",
+                     $realtime, lock_wait_cycles,
+                     TESTBED.u_gcd.locked1, TESTBED.u_gcd.code1,
+                     TESTBED.u_gcd.lead_lag1, observed_phase(observed_o1_edge),
+                     TESTBED.u_gcd.locked2, TESTBED.u_gcd.code2,
+                     TESTBED.u_gcd.lead_lag2, observed_phase(observed_o2_edge),
+                     clk_o1, clk_o2);
+            dbg_code1 = TESTBED.u_gcd.code1;
+            dbg_code2 = TESTBED.u_gcd.code2;
+            dbg_locked1 = TESTBED.u_gcd.locked1;
+            dbg_locked2 = TESTBED.u_gcd.locked2;
+            dbg_initialized = 1;
+        end
+        `elsif POST
+        if (!dbg_initialized ||
+            (TESTBED.u_gcd.code1 !== dbg_code1) ||
+            (TESTBED.u_gcd.code2 !== dbg_code2) ||
+            (TESTBED.u_gcd.locked1 !== dbg_locked1) ||
+            (TESTBED.u_gcd.locked2 !== dbg_locked2) ||
+            ((lock_wait_cycles % 128) == 0)) begin
+            $display("POST_SEARCH t=%0.3f ns cycle=%0d | L1=%b code1=%b lead1=%b phase1=%0.3f | L2=%b code2=%b lead2=%b phase2=%0.3f | out1=%b out2=%b",
+                     $realtime, lock_wait_cycles,
+                     TESTBED.u_gcd.locked1, TESTBED.u_gcd.code1,
+                     TESTBED.u_gcd.lead_lag1, observed_phase(observed_o1_edge),
+                     TESTBED.u_gcd.locked2, TESTBED.u_gcd.code2,
+                     TESTBED.u_gcd.lead_lag2, observed_phase(observed_o2_edge),
+                     clk_o1, clk_o2);
+            dbg_code1 = TESTBED.u_gcd.code1;
+            dbg_code2 = TESTBED.u_gcd.code2;
+            dbg_locked1 = TESTBED.u_gcd.locked1;
+            dbg_locked2 = TESTBED.u_gcd.locked2;
+            dbg_initialized = 1;
+        end
+        `endif
     end
 
     if (locked !== 1'b1) begin
+        `ifdef RTL
+        $display("DLL_TIMEOUT t=%0.3f ns after %0d cycles", $realtime, lock_wait_cycles);
+        $display("  PATH1: locked=%b code=%b lead=%b measure=%b wait=%b meta=%b sync=%b prev_valid=%b prev_lead=%b",
+                 TESTBED.u_gcd.locked1, TESTBED.u_gcd.code1,
+                 TESTBED.u_gcd.lead_lag1, TESTBED.u_gcd.measure1,
+                 TESTBED.u_gcd.u_ctl1.wait_count,
+                 TESTBED.u_gcd.u_ctl1.pd_meta,
+                 TESTBED.u_gcd.u_ctl1.pd_sync,
+                 TESTBED.u_gcd.u_ctl1.prev_valid,
+                 TESTBED.u_gcd.u_ctl1.prev_lead_lag);
+        $display("  PATH2: locked=%b code=%b lead=%b measure=%b wait=%b meta=%b sync=%b prev_valid=%b prev_lead=%b enable=%b",
+                 TESTBED.u_gcd.locked2, TESTBED.u_gcd.code2,
+                 TESTBED.u_gcd.lead_lag2, TESTBED.u_gcd.measure2,
+                 TESTBED.u_gcd.u_ctl2.wait_count,
+                 TESTBED.u_gcd.u_ctl2.pd_meta,
+                 TESTBED.u_gcd.u_ctl2.pd_sync,
+                 TESTBED.u_gcd.u_ctl2.prev_valid,
+                 TESTBED.u_gcd.u_ctl2.prev_lead_lag,
+                 TESTBED.u_gcd.locked1);
+        `elsif GATE
+        $display("GATE_TIMEOUT t=%0.3f ns after %0d cycles", $realtime, lock_wait_cycles);
+        $display("  PATH1: locked=%b code=%b lead=%b clk_o1=%b",
+                 TESTBED.u_gcd.locked1, TESTBED.u_gcd.code1,
+                 TESTBED.u_gcd.lead_lag1, clk_o1);
+        $display("  PATH2: locked=%b code=%b lead=%b clk_o2=%b",
+                 TESTBED.u_gcd.locked2, TESTBED.u_gcd.code2,
+                 TESTBED.u_gcd.lead_lag2, clk_o2);
+        `elsif POST
+        $display("POST_TIMEOUT t=%0.3f ns after %0d cycles", $realtime, lock_wait_cycles);
+        $display("  PATH1: locked=%b code=%b lead=%b clk_o1=%b",
+                 TESTBED.u_gcd.locked1, TESTBED.u_gcd.code1,
+                 TESTBED.u_gcd.lead_lag1, clk_o1);
+        $display("  PATH2: locked=%b code=%b lead=%b clk_o2=%b",
+                 TESTBED.u_gcd.locked2, TESTBED.u_gcd.code2,
+                 TESTBED.u_gcd.lead_lag2, clk_o2);
+        `endif
+        `HW2_RESULT_BANNER(1'b0, "DLL TEST", "LOCK TIMEOUT: controllers did not both lock in time.")
         $fatal(1, "DLL did not lock within %0d input cycles", MAX_LOCK_CYCLES);
     end
 
@@ -491,12 +716,20 @@ initial begin
     check_enable = 0;
 
     if (fail_flag || (o1_checks < VERIFY_CYCLES-1) ||
-        (o2_checks < VERIFY_CYCLES-1))
+        (o2_checks < VERIFY_CYCLES-1)) begin
+        `HW2_RESULT_BANNER(1'b0, "DLL TEST", "Locked outputs failed phase, period or activity checks.")
         $fatal(1, "DLL TEST FAILED: o1_checks=%0d, o2_checks=%0d",
                  o1_checks, o2_checks);
+    end
 
     verify_absolute_delay;
+    `ifdef DLL_UNIT_DIAG
+    $display("DLL UNIT-DELAY DIAGNOSTIC PASSED (NOT 1 GHz timing verification)");
+    `HW2_RESULT_BANNER(1'b1, "DLL UNIT-DELAY DIAGNOSTIC", "20 ns clock; targets 10/20 ns. NOT 1 GHz timing sign-off.")
+    `else
     $display("DLL TEST PASSED: locked, periods checked, physical delays verified");
+    `HW2_RESULT_BANNER(1'b1, "DLL 1 GHz TEST", "Targets 0.5/1.0 ns passed with the loaded model; check SDF.")
+    `endif
 
     repeat (2) @(negedge clk_in);
     $finish;

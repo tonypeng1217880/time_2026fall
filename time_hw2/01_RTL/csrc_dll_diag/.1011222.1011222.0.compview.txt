@@ -1,0 +1,9 @@
+{"vcs1":{"timestamp_begin":1791651956.930638531, "rt":1.79, "ut":0.11, "st":0.07}}
+{"vcselab":{"timestamp_begin":1791651958.786795405, "rt":0.68, "ut":0.12, "st":0.06}}
+{"link":{"timestamp_begin":1791651959.529155852, "rt":0.17, "ut":0.05, "st":0.06}}
+{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1791651956.537240596}
+{"VCS_COMP_START_TIME": 1791651956.537240596}
+{"VCS_COMP_END_TIME": 1791651960.300485502}
+{"VCS_USER_OPTIONS": "-full64 -sverilog -timescale=1ns/1ps +incdir+. +incdir+../00_TESTBED +define+RTL+DLL_TEST+NO_FSDB+DLL_UNIT_DIAG +notimingcheck -v /usr/cadtool/ee5216/CBDK_TSMC90GUTM_Arm_f1.0/CIC/Verilog/tsmc090.v -f filelist.f -Mdir=csrc_dll_diag -o simv_dll_diag -l dll_diag.log -R"}
+{"vcs1": {"peak_mem": 1011693}}
+{"stitch_vcselab": {"peak_mem": 1011733}}
